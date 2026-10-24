@@ -73,7 +73,7 @@ function copyDirDeterministic(srcDir, destDir) {
     a.name.localeCompare(b.name)
   );
   for (const entry of entries) {
-    if (entry.name === '.DS_Store' || entry.name === '.gitkeep') {
+    if (entry.name === '.DS_Store' || entry.name === '.gitkeep' || entry.name === 'system') {
       continue;
     }
     const srcPath = join(srcDir, entry.name);

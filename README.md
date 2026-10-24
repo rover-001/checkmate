@@ -248,7 +248,7 @@ Goal-driven mode. Reach the user's win condition in the fewest moves.
 4. DECIDE. Pick one approach. If a tradeoff matters, state it in one line. Never present a menu unless asked.
 5. ASK RARELY. Ask only when blocked and no safe assumption exists. One question max. Otherwise state the assumption in one line and proceed.
 6. FINISH. Partial work is not done. Continue until the goal is met or a real blocker exists. Do not stop to ask permission for obvious next steps.
-7. VERIFY. Before declaring done, check the result against the goal (run it, test it, re-read the requirement), not against how it looks.
+7. VERIFY. Before declaring done, check the result against the goal (run it, test it, re-read the requirement), not against how it looks. When writing tests, verify actual behavioral logic and state transitions—never write superficial assertions that merely check prompt text, log strings, or mock return values.
 8. EARN COMPLEXITY. Add complexity only when a concrete failure or stated requirement forces it. Say which.
 9. CLOSE. Last line: done, not done: <why>, or blocked: <what's needed>.
 
@@ -276,25 +276,38 @@ checkmate is rigorously evaluated across a 40-task benchmark suite spanning 4 di
 
 <!-- results:start -->
 
-*Benchmark summary generated at 2026-10-24T08:12:58.264Z using model `claude-opus-5-5` (3 run(s)/task).*
+*Benchmark summary generated at 2026-10-24T15:59:32.863Z using model `claude-opus-5-5` (3 run(s)/task).*
 
-| Scope | Arm | Runs | Passed | Pass Rate | Median Output Tokens (IQR) | Median Total Tokens | Median Steps | Median Wall |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Overall** | `baseline` | 120 | 104 | **86.7%** | 562.5 [146–671] | 53828 | 4 | 6.48s |
-| **Overall** | `checkmate` | 120 | 118 | **98.3%** | 274 [22–331] | 42897.5 | 2 | 3.79s |
-| **Overall** | `ultra` | 120 | 115 | **95.8%** | 203 [11–240] | 39090 | 2 | 3.08s |
-| Feature | `baseline` | 30 | 25 | 83.3% | 755 [701.5–818.5] | 65590 | 5 | 9.18s |
-| Feature | `checkmate` | 30 | 30 | 100.0% | 367 [341–390] | 49138 | 3 | 4.99s |
-| Feature | `ultra` | 30 | 28 | 93.3% | 273 [262–286.5] | 45276 | 2 | 4.25s |
-| Bugfix | `baseline` | 30 | 24 | 80.0% | 515.5 [484.5–549] | 49732.5 | 4 | 5.96s |
-| Bugfix | `checkmate` | 30 | 29 | 96.7% | 244 [225.5–269] | 40928 | 2 | 3.43s |
-| Bugfix | `ultra` | 30 | 29 | 96.7% | 192 [174.5–202.5] | 38920 | 2 | 2.91s |
-| Refactor | `baseline` | 30 | 27 | 90.0% | 624 [589–665] | 57984 | 4 | 7.22s |
-| Refactor | `checkmate` | 30 | 29 | 96.7% | 308 [280–322] | 45004 | 3 | 4.12s |
-| Refactor | `ultra` | 30 | 29 | 96.7% | 218 [205.5–229] | 41398 | 2 | 3.30s |
-| Qa | `baseline` | 30 | 28 | 93.3% | 121.5 [110–136.5] | 15121.5 | 1 | 1.91s |
-| Qa | `checkmate` | 30 | 30 | 100.0% | 18 [15–19] | 15218 | 1 | 1.43s |
-| Qa | `ultra` | 30 | 29 | 96.7% | 8 [7–9] | 15308 | 1 | 1.20s |
+| Scope | Arm | Runs | Passed | Pass Rate | Uncached In | Cache Read | Output | Total Tokens | Steps | Wall |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Overall** | `baseline` | 120 | 104 | **86.7%** | 3920.5 [2583–5193] | 45724 [10784–51405] | 562.5 [146–671] | 53828 | 4 | 6.48s |
+| **Overall** | `checkmate` | 120 | 118 | **98.3%** | 2431.5 [2107–3325] | 37184 [11131–42441] | 274 [22–331] | 42897.5 | 2 | 3.79s |
+| **Overall** | `ultra` | 120 | 115 | **95.8%** | 2380 [2121–2842] | 34300 [11147–36747] | 203 [11–240] | 39090 | 2 | 3.08s |
+| **Shared Intersection** | `baseline` | 63 | 63 | **100.0%** | 3624 [2400–5166] | 48154 [10494–50980] | 562 [133–665] | 56752 | 4 | 6.45s |
+| **Shared Intersection** | `checkmate` | 63 | 63 | **100.0%** | 2422 [2107–3117] | 38283 [10663–39833] | 278 [19–328] | 44614 | 2 | 3.69s |
+| **Shared Intersection** | `ultra` | 63 | 63 | **100.0%** | 2380 [2083–2807] | 35291 [10736–36600] | 204 [9–236] | 41145 | 2 | 3.06s |
+| Feature | `baseline` | 30 | 25 | 83.3% | 5166 [3831–7754] | 57020 [55298.5–57624] | 755 [701.5–818.5] | 65590 | 5 | 9.18s |
+| Feature | `checkmate` | 30 | 30 | 100.0% | 2899.5 [2133–3440] | 43252.5 [42805–43910] | 367 [341–390] | 49138 | 3 | 4.99s |
+| Feature | `ultra` | 30 | 28 | 93.3% | 2563.5 [2314.5–2884.5] | 39803 [39447.5–40073.5] | 273 [262–286.5] | 45276 | 2 | 4.25s |
+| Bugfix | `baseline` | 30 | 24 | 80.0% | 4341.5 [3530.5–5244] | 42252 [41668–42764] | 515.5 [484.5–549] | 49732.5 | 4 | 5.96s |
+| Bugfix | `checkmate` | 30 | 29 | 96.7% | 2475 [2109.5–3564] | 35623 [34523–35994.5] | 244 [225.5–269] | 40928 | 2 | 3.43s |
+| Bugfix | `ultra` | 30 | 29 | 96.7% | 2685 [2198–2991.5] | 33337 [32950.5–33945] | 192 [174.5–202.5] | 38920 | 2 | 2.91s |
+| Refactor | `baseline` | 30 | 27 | 90.0% | 4526 [3691–6450] | 50180 [48705–50629] | 624 [589–665] | 57984 | 4 | 7.22s |
+| Refactor | `checkmate` | 30 | 29 | 96.7% | 3060 [2145–3437] | 38956 [38603.5–39817.5] | 308 [280–322] | 45004 | 3 | 4.12s |
+| Refactor | `ultra` | 30 | 29 | 96.7% | 2581 [2227.5–2883] | 35953 [35588–36383] | 218 [205.5–229] | 41398 | 2 | 3.30s |
+| Qa | `baseline` | 30 | 28 | 93.3% | 2333.5 [2097–2631] | 10111 [9615–10505] | 121.5 [110–136.5] | 15121.5 | 1 | 1.91s |
+| Qa | `checkmate` | 30 | 30 | 100.0% | 2198 [2035–2324] | 10347.5 [10078–10696] | 18 [15–19] | 15218 | 1 | 1.43s |
+| Qa | `ultra` | 30 | 29 | 96.7% | 2199 [2058–2312] | 10445 [10202.5–10747] | 8 [7–9] | 15308 | 1 | 1.20s |
+
+### Shared Task Intersection (All Arms Passed)
+
+*Paired comparison across 21 task(s) where all evaluated arms passed 100% of runs (eliminating survivorship bias).*
+
+| Arm | Shared Tasks | Pass Rate | Uncached In | Cache Read | Output | Total Tokens | Steps | Wall |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| `baseline` | 21 | 100.0% | 3624 [2400–5166] | 48154 [10494–50980] | 562 [133–665] | 56752 | 4 | 6.45s |
+| `checkmate` | 21 | 100.0% | 2422 [2107–3117] | 38283 [10663–39833] | 278 [19–328] | 44614 | 2 | 3.69s |
+| `ultra` | 21 | 100.0% | 2380 [2083–2807] | 35291 [10736–36600] | 204 [9–236] | 41145 | 2 | 3.06s |
 
 <!-- results:end -->
 

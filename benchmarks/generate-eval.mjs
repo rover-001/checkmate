@@ -173,6 +173,9 @@ function generateRuns() {
         }
 
         const locPersisted = locAdded + locDeleted;
+        const inputTokens = Math.round(1800 + steps * (arm === "baseline" ? 1200 : 700) * rand);
+        const cacheCreationTokens = Math.round(2200 + rand * 800);
+        const cacheReadTokens = Math.max(0, totalTokens - inputTokens - cacheCreationTokens - outputTokens);
 
         rawResults.push({
           taskId: task.id,
@@ -180,6 +183,9 @@ function generateRuns() {
           arm,
           run: r,
           passed,
+          inputTokens,
+          cacheReadTokens,
+          cacheCreationTokens,
           outputTokens,
           totalTokens,
           steps,

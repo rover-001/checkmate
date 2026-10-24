@@ -378,6 +378,11 @@ describe('Behavior Scenarios Acceptance Tests (B1–B9)', () => {
       assert.match(CORE_RULES, /`not done: <why>`/i);
     });
 
+    it('covers Rule 7 strict behavioral verification requirement and forbids shallow test assertions', () => {
+      assert.match(CORE_RULES, /verify actual behavioral logic and state transitions/i);
+      assert.match(CORE_RULES, /never write superficial assertions that merely check prompt text,\s*log strings,\s*or mock return values/i);
+    });
+
     it('covers B8 via off switch clause and normal mode instructions', () => {
       assert.match(CORE_RULES, /Off switch:/i);
       assert.match(CORE_RULES, /if the user says ["']stop checkmate["'] or ["']normal mode["'],\s*stop applying these rules/i);

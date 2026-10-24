@@ -27,6 +27,13 @@ function formatPassRate(rate) {
   return `${(rate * 100).toFixed(1)}%`;
 }
 
+function formatRow(scopeLabel, armName, arm, isBoldPass = false) {
+  const passStr = isBoldPass
+    ? `**${formatPassRate(arm.passRate)}**`
+    : formatPassRate(arm.passRate);
+  return `| ${scopeLabel} | \`${armName}\` | ${arm.runs} | ${arm.passed} | ${passStr} | ${formatTokens(arm.medianInputTokens, arm.iqrInputTokens)} | ${formatTokens(arm.medianCacheReadTokens, arm.iqrCacheReadTokens)} | ${formatTokens(arm.medianOutputTokens, arm.iqrOutputTokens)} | ${arm.medianTotalTokens ?? "-"} | ${arm.medianSteps ?? "-"} | ${formatWall(arm.medianWallMs)} |`;
+}
+
 export function generateMarkdownReport(summary) {
   const lines = [];
   lines.push(
@@ -34,31 +41,64 @@ export function generateMarkdownReport(summary) {
   );
   lines.push("");
   lines.push(
-    "| Scope | Arm | Runs | Passed | Pass Rate | Median Output Tokens (IQR) | Median Total Tokens | Median Steps | Median Wall |"
+    "| Scope | Arm | Runs | Passed | Pass Rate | Uncached In | Cache Read | Output | Total Tokens | Steps | Wall |"
   );
   lines.push(
-    "| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |"
+    "| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |"
   );
 
   // 1. Overall
   if (summary.arms) {
     for (const [armName, arm] of Object.entries(summary.arms)) {
-      lines.push(
-        `| **Overall** | \`${armName}\` | ${arm.runs} | ${arm.passed} | **${formatPassRate(arm.passRate)}** | ${formatTokens(arm.medianOutputTokens, arm.iqrOutputTokens)} | ${arm.medianTotalTokens ?? "-"} | ${arm.medianSteps ?? "-"} | ${formatWall(arm.medianWallMs)} |`
-      );
+      lines.push(formatRow("**Overall**", armName, arm, true));
     }
   }
 
-  // 2. Buckets
+  // 2. Shared Intersection (if present in main table)
+  if (summary.intersection && summary.intersection.arms) {
+    for (const [armName, arm] of Object.entries(summary.intersection.arms)) {
+      lines.push(formatRow("**Shared Intersection**", armName, arm, true));
+    }
+  }
+
+  // 3. Buckets
   if (summary.buckets) {
     for (const [bucketName, bucketArms] of Object.entries(summary.buckets)) {
       const bucketLabel =
         bucketName.charAt(0).toUpperCase() + bucketName.slice(1);
       for (const [armName, arm] of Object.entries(bucketArms)) {
-        lines.push(
-          `| ${bucketLabel} | \`${armName}\` | ${arm.runs} | ${arm.passed} | ${formatPassRate(arm.passRate)} | ${formatTokens(arm.medianOutputTokens, arm.iqrOutputTokens)} | ${arm.medianTotalTokens ?? "-"} | ${arm.medianSteps ?? "-"} | ${formatWall(arm.medianWallMs)} |`
-        );
+        lines.push(formatRow(bucketLabel, armName, arm, false));
       }
+    }
+  }
+
+  // 4. Dedicated Shared Task Intersection Section
+  if (
+    summary.intersection &&
+    summary.intersection.arms &&
+    Object.keys(summary.intersection.arms).length > 0
+  ) {
+    const taskCount =
+      summary.intersection.taskCount ??
+      summary.intersection.sharedTaskCount ??
+      0;
+    lines.push("");
+    lines.push("### Shared Task Intersection (All Arms Passed)");
+    lines.push("");
+    lines.push(
+      `*Paired comparison across ${taskCount} task(s) where all evaluated arms passed 100% of runs (eliminating survivorship bias).*`
+    );
+    lines.push("");
+    lines.push(
+      "| Arm | Shared Tasks | Pass Rate | Uncached In | Cache Read | Output | Total Tokens | Steps | Wall |"
+    );
+    lines.push(
+      "| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |"
+    );
+    for (const [armName, arm] of Object.entries(summary.intersection.arms)) {
+      lines.push(
+        `| \`${armName}\` | ${taskCount} | ${formatPassRate(arm.passRate)} | ${formatTokens(arm.medianInputTokens, arm.iqrInputTokens)} | ${formatTokens(arm.medianCacheReadTokens, arm.iqrCacheReadTokens)} | ${formatTokens(arm.medianOutputTokens, arm.iqrOutputTokens)} | ${arm.medianTotalTokens ?? "-"} | ${arm.medianSteps ?? "-"} | ${formatWall(arm.medianWallMs)} |`
+      );
     }
   }
 

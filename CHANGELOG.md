@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-10-24
+
+### Changed
+- **Rule 7 Refinement**: Strict behavioral testing requirements; disallowing shallow string/prompt assertions.
+- **Benchmark Telemetry**: Uncached input, cache-read, and output token breakdown; paired intersection comparisons across arms to eliminate survivorship bias.
+- **Build Sync**: Synchronized across Cursor, OpenCode, Codex, and Claude Code.
+
 ## [1.0.0] - 2026-10-24
 
 ### Added

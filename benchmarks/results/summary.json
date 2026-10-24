@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-24T08:12:58.264Z",
+  "generatedAt": "2026-10-24T15:59:32.863Z",
   "model": "claude-opus-5-5",
   "runsPerTask": 3,
   "arms": {
@@ -7,6 +7,16 @@
       "runs": 120,
       "passed": 104,
       "passRate": 0.8667,
+      "medianInputTokens": 3920.5,
+      "iqrInputTokens": [
+        2583,
+        5193
+      ],
+      "medianCacheReadTokens": 45724,
+      "iqrCacheReadTokens": [
+        10784,
+        51405
+      ],
       "medianOutputTokens": 562.5,
       "iqrOutputTokens": [
         146,
@@ -20,6 +30,16 @@
       "runs": 120,
       "passed": 118,
       "passRate": 0.9833,
+      "medianInputTokens": 2431.5,
+      "iqrInputTokens": [
+        2107,
+        3325
+      ],
+      "medianCacheReadTokens": 37184,
+      "iqrCacheReadTokens": [
+        11131,
+        42441
+      ],
       "medianOutputTokens": 274,
       "iqrOutputTokens": [
         22,
@@ -33,6 +53,16 @@
       "runs": 120,
       "passed": 115,
       "passRate": 0.9583,
+      "medianInputTokens": 2380,
+      "iqrInputTokens": [
+        2121,
+        2842
+      ],
+      "medianCacheReadTokens": 34300,
+      "iqrCacheReadTokens": [
+        11147,
+        36747
+      ],
       "medianOutputTokens": 203,
       "iqrOutputTokens": [
         11,
@@ -49,6 +79,16 @@
         "runs": 30,
         "passed": 25,
         "passRate": 0.8333,
+        "medianInputTokens": 5166,
+        "iqrInputTokens": [
+          3831,
+          7754
+        ],
+        "medianCacheReadTokens": 57020,
+        "iqrCacheReadTokens": [
+          55298.5,
+          57624
+        ],
         "medianOutputTokens": 755,
         "iqrOutputTokens": [
           701.5,
@@ -62,6 +102,16 @@
         "runs": 30,
         "passed": 30,
         "passRate": 1,
+        "medianInputTokens": 2899.5,
+        "iqrInputTokens": [
+          2133,
+          3440
+        ],
+        "medianCacheReadTokens": 43252.5,
+        "iqrCacheReadTokens": [
+          42805,
+          43910
+        ],
         "medianOutputTokens": 367,
         "iqrOutputTokens": [
           341,
@@ -75,6 +125,16 @@
         "runs": 30,
         "passed": 28,
         "passRate": 0.9333,
+        "medianInputTokens": 2563.5,
+        "iqrInputTokens": [
+          2314.5,
+          2884.5
+        ],
+        "medianCacheReadTokens": 39803,
+        "iqrCacheReadTokens": [
+          39447.5,
+          40073.5
+        ],
         "medianOutputTokens": 273,
         "iqrOutputTokens": [
           262,
@@ -90,6 +150,16 @@
         "runs": 30,
         "passed": 24,
         "passRate": 0.8,
+        "medianInputTokens": 4341.5,
+        "iqrInputTokens": [
+          3530.5,
+          5244
+        ],
+        "medianCacheReadTokens": 42252,
+        "iqrCacheReadTokens": [
+          41668,
+          42764
+        ],
         "medianOutputTokens": 515.5,
         "iqrOutputTokens": [
           484.5,
@@ -103,6 +173,16 @@
         "runs": 30,
         "passed": 29,
         "passRate": 0.9667,
+        "medianInputTokens": 2475,
+        "iqrInputTokens": [
+          2109.5,
+          3564
+        ],
+        "medianCacheReadTokens": 35623,
+        "iqrCacheReadTokens": [
+          34523,
+          35994.5
+        ],
         "medianOutputTokens": 244,
         "iqrOutputTokens": [
           225.5,
@@ -116,6 +196,16 @@
         "runs": 30,
         "passed": 29,
         "passRate": 0.9667,
+        "medianInputTokens": 2685,
+        "iqrInputTokens": [
+          2198,
+          2991.5
+        ],
+        "medianCacheReadTokens": 33337,
+        "iqrCacheReadTokens": [
+          32950.5,
+          33945
+        ],
         "medianOutputTokens": 192,
         "iqrOutputTokens": [
           174.5,
@@ -131,6 +221,16 @@
         "runs": 30,
         "passed": 27,
         "passRate": 0.9,
+        "medianInputTokens": 4526,
+        "iqrInputTokens": [
+          3691,
+          6450
+        ],
+        "medianCacheReadTokens": 50180,
+        "iqrCacheReadTokens": [
+          48705,
+          50629
+        ],
         "medianOutputTokens": 624,
         "iqrOutputTokens": [
           589,
@@ -144,6 +244,16 @@
         "runs": 30,
         "passed": 29,
         "passRate": 0.9667,
+        "medianInputTokens": 3060,
+        "iqrInputTokens": [
+          2145,
+          3437
+        ],
+        "medianCacheReadTokens": 38956,
+        "iqrCacheReadTokens": [
+          38603.5,
+          39817.5
+        ],
         "medianOutputTokens": 308,
         "iqrOutputTokens": [
           280,
@@ -157,6 +267,16 @@
         "runs": 30,
         "passed": 29,
         "passRate": 0.9667,
+        "medianInputTokens": 2581,
+        "iqrInputTokens": [
+          2227.5,
+          2883
+        ],
+        "medianCacheReadTokens": 35953,
+        "iqrCacheReadTokens": [
+          35588,
+          36383
+        ],
         "medianOutputTokens": 218,
         "iqrOutputTokens": [
           205.5,
@@ -172,6 +292,16 @@
         "runs": 30,
         "passed": 28,
         "passRate": 0.9333,
+        "medianInputTokens": 2333.5,
+        "iqrInputTokens": [
+          2097,
+          2631
+        ],
+        "medianCacheReadTokens": 10111,
+        "iqrCacheReadTokens": [
+          9615,
+          10505
+        ],
         "medianOutputTokens": 121.5,
         "iqrOutputTokens": [
           110,
@@ -185,6 +315,16 @@
         "runs": 30,
         "passed": 30,
         "passRate": 1,
+        "medianInputTokens": 2198,
+        "iqrInputTokens": [
+          2035,
+          2324
+        ],
+        "medianCacheReadTokens": 10347.5,
+        "iqrCacheReadTokens": [
+          10078,
+          10696
+        ],
         "medianOutputTokens": 18,
         "iqrOutputTokens": [
           15,
@@ -198,6 +338,16 @@
         "runs": 30,
         "passed": 29,
         "passRate": 0.9667,
+        "medianInputTokens": 2199,
+        "iqrInputTokens": [
+          2058,
+          2312
+        ],
+        "medianCacheReadTokens": 10445,
+        "iqrCacheReadTokens": [
+          10202.5,
+          10747
+        ],
         "medianOutputTokens": 8,
         "iqrOutputTokens": [
           7,
@@ -206,6 +356,127 @@
         "medianTotalTokens": 15308,
         "medianSteps": 1,
         "medianWallMs": 1200
+      }
+    }
+  },
+  "intersection": {
+    "taskCount": 21,
+    "sharedTaskCount": 21,
+    "taskIds": [
+      "bugfix-03-async-unhandled",
+      "bugfix-04-array-mutation",
+      "bugfix-09-prototype-pollution",
+      "feature-02-lru-cache",
+      "feature-05-semver-compare",
+      "feature-09-query-string",
+      "feature-10-tree-traversal",
+      "qa-01-http-status",
+      "qa-04-css-specificity",
+      "qa-05-sql-aggregate",
+      "qa-06-dockerfile-instruction",
+      "qa-07-regex-matcher",
+      "qa-08-pkg-version",
+      "qa-10-complexity-class",
+      "refactor-03-replace-switch",
+      "refactor-04-simplify-boolean",
+      "refactor-05-remove-dead-code",
+      "refactor-06-class-to-functions",
+      "refactor-07-async-await",
+      "refactor-09-magic-numbers",
+      "refactor-10-consolidate-duplicates"
+    ],
+    "sharedTaskIds": [
+      "bugfix-03-async-unhandled",
+      "bugfix-04-array-mutation",
+      "bugfix-09-prototype-pollution",
+      "feature-02-lru-cache",
+      "feature-05-semver-compare",
+      "feature-09-query-string",
+      "feature-10-tree-traversal",
+      "qa-01-http-status",
+      "qa-04-css-specificity",
+      "qa-05-sql-aggregate",
+      "qa-06-dockerfile-instruction",
+      "qa-07-regex-matcher",
+      "qa-08-pkg-version",
+      "qa-10-complexity-class",
+      "refactor-03-replace-switch",
+      "refactor-04-simplify-boolean",
+      "refactor-05-remove-dead-code",
+      "refactor-06-class-to-functions",
+      "refactor-07-async-await",
+      "refactor-09-magic-numbers",
+      "refactor-10-consolidate-duplicates"
+    ],
+    "arms": {
+      "baseline": {
+        "runs": 63,
+        "passed": 63,
+        "passRate": 1,
+        "medianInputTokens": 3624,
+        "iqrInputTokens": [
+          2400,
+          5166
+        ],
+        "medianCacheReadTokens": 48154,
+        "iqrCacheReadTokens": [
+          10494,
+          50980
+        ],
+        "medianOutputTokens": 562,
+        "iqrOutputTokens": [
+          133,
+          665
+        ],
+        "medianTotalTokens": 56752,
+        "medianSteps": 4,
+        "medianWallMs": 6448
+      },
+      "checkmate": {
+        "runs": 63,
+        "passed": 63,
+        "passRate": 1,
+        "medianInputTokens": 2422,
+        "iqrInputTokens": [
+          2107,
+          3117
+        ],
+        "medianCacheReadTokens": 38283,
+        "iqrCacheReadTokens": [
+          10663,
+          39833
+        ],
+        "medianOutputTokens": 278,
+        "iqrOutputTokens": [
+          19,
+          328
+        ],
+        "medianTotalTokens": 44614,
+        "medianSteps": 2,
+        "medianWallMs": 3695
+      },
+      "ultra": {
+        "runs": 63,
+        "passed": 63,
+        "passRate": 1,
+        "medianInputTokens": 2380,
+        "iqrInputTokens": [
+          2083,
+          2807
+        ],
+        "medianCacheReadTokens": 35291,
+        "iqrCacheReadTokens": [
+          10736,
+          36600
+        ],
+        "medianOutputTokens": 204,
+        "iqrOutputTokens": [
+          9,
+          236
+        ],
+        "medianTotalTokens": 41145,
+        "medianSteps": 2,
+        "medianWallMs": 3062
       }
     }
   }

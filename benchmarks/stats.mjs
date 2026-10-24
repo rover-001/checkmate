@@ -40,11 +40,15 @@ export function computeQuartiles(numbers) {
 /**
  * Computes ARM statistics over runs.
  * Note: Medians and IQR are computed STRICTLY over passed runs.
- * @param {Array<{ passed: boolean, outputTokens?: number, totalTokens?: number, steps?: number, wallMs?: number }>} runs
+ * @param {Array<{ passed: boolean, inputTokens?: number, cacheReadTokens?: number, outputTokens?: number, totalTokens?: number, steps?: number, wallMs?: number }>} runs
  * @returns {{
  *   runs: number,
  *   passed: number,
  *   passRate: number,
+ *   medianInputTokens: number|null,
+ *   iqrInputTokens: [number, number]|null,
+ *   medianCacheReadTokens: number|null,
+ *   iqrCacheReadTokens: [number, number]|null,
  *   medianOutputTokens: number|null,
  *   iqrOutputTokens: [number, number]|null,
  *   medianTotalTokens: number|null,
@@ -63,6 +67,10 @@ export function computeArmStats(runs = []) {
       runs: totalRuns,
       passed: 0,
       passRate: 0,
+      medianInputTokens: null,
+      iqrInputTokens: null,
+      medianCacheReadTokens: null,
+      iqrCacheReadTokens: null,
       medianOutputTokens: null,
       iqrOutputTokens: null,
       medianTotalTokens: null,
@@ -71,6 +79,12 @@ export function computeArmStats(runs = []) {
     };
   }
 
+  const inputTokens = passedRuns
+    .map((r) => r.inputTokens)
+    .filter((v) => typeof v === "number");
+  const cacheReadTokens = passedRuns
+    .map((r) => r.cacheReadTokens)
+    .filter((v) => typeof v === "number");
   const outputTokens = passedRuns
     .map((r) => r.outputTokens)
     .filter((v) => typeof v === "number");
@@ -88,6 +102,10 @@ export function computeArmStats(runs = []) {
     runs: totalRuns,
     passed,
     passRate,
+    medianInputTokens: computeMedian(inputTokens),
+    iqrInputTokens: computeQuartiles(inputTokens),
+    medianCacheReadTokens: computeMedian(cacheReadTokens),
+    iqrCacheReadTokens: computeQuartiles(cacheReadTokens),
     medianOutputTokens: computeMedian(outputTokens),
     iqrOutputTokens: computeQuartiles(outputTokens),
     medianTotalTokens: computeMedian(totalTokens),
@@ -97,9 +115,89 @@ export function computeArmStats(runs = []) {
 }
 
 /**
+ * Computes paired intersection metrics strictly over tasks where ALL evaluated arms passed every run.
+ * Eliminates survivorship bias by evaluating identical task difficulty profiles.
+ *
+ * @param {Array<object>|{ runs: Array<object>, armNames?: string[] }} runsOrOptions
+ * @param {string[]} [maybeArmNames]
+ * @returns {{
+ *   taskCount: number,
+ *   sharedTaskCount: number,
+ *   taskIds: string[],
+ *   sharedTaskIds: string[],
+ *   arms: Record<string, ReturnType<typeof computeArmStats>>
+ * }}
+ */
+export function computeIntersectionStats(runsOrOptions = [], maybeArmNames) {
+  let runs = [];
+  let armNames = null;
+
+  if (Array.isArray(runsOrOptions)) {
+    runs = runsOrOptions;
+    if (Array.isArray(maybeArmNames)) {
+      armNames = maybeArmNames;
+    }
+  } else if (runsOrOptions && typeof runsOrOptions === "object") {
+    runs = runsOrOptions.runs || [];
+    if (Array.isArray(runsOrOptions.armNames)) {
+      armNames = runsOrOptions.armNames;
+    }
+  }
+
+  if (!armNames || armNames.length === 0) {
+    armNames = [...new Set(runs.map((r) => r.arm).filter(Boolean))];
+  }
+
+  // Group runs by taskId
+  const tasksMap = new Map();
+  for (const run of runs) {
+    if (!run.taskId) continue;
+    if (!tasksMap.has(run.taskId)) {
+      tasksMap.set(run.taskId, []);
+    }
+    tasksMap.get(run.taskId).push(run);
+  }
+
+  // Find taskIds where ALL evaluated arms passed EVERY run
+  const sharedTaskIds = [];
+  for (const [taskId, taskRuns] of tasksMap.entries()) {
+    let allArmsPassed = true;
+    for (const arm of armNames) {
+      const armRuns = taskRuns.filter((r) => r.arm === arm);
+      if (armRuns.length === 0 || !armRuns.every((r) => r.passed === true)) {
+        allArmsPassed = false;
+        break;
+      }
+    }
+    if (allArmsPassed) {
+      sharedTaskIds.push(taskId);
+    }
+  }
+  sharedTaskIds.sort();
+
+  const arms = {};
+  for (const arm of armNames) {
+    const armIntersectionRuns = runs.filter(
+      (r) => r.arm === arm && sharedTaskIds.includes(r.taskId)
+    );
+    arms[arm] = computeArmStats(armIntersectionRuns);
+  }
+
+  return {
+    taskCount: sharedTaskIds.length,
+    sharedTaskCount: sharedTaskIds.length,
+    taskIds: sharedTaskIds,
+    sharedTaskIds,
+    arms,
+  };
+}
+
+export const computePairedIntersection = computeIntersectionStats;
+
+/**
  * Computes full summary object per shared contract schema.
  * @param {{
- *   runs: Array<{ bucket: string, arm: string, passed: boolean, outputTokens?: number, totalTokens?: number, steps?: number, wallMs?: number }>,
+ *   runs: Array<{ taskId?: string, bucket: string, arm: string, passed: boolean, inputTokens?: number, cacheReadTokens?: number, outputTokens?: number, totalTokens?: number, steps?: number, wallMs?: number }>,
  *   model: string,
  *   runsPerTask: number,
  *   armNames?: string[],
@@ -132,11 +230,14 @@ export function computeSummary({
     }
   }
 
+  const intersection = computeIntersectionStats({ runs, armNames });
+
   return {
     generatedAt,
     model,
     runsPerTask,
     arms,
     buckets,
+    intersection,
   };
 }

@@ -1,5 +1,4 @@
 # Distribution & Build
-dist/
 node_modules/
 
 # Environment & Logs
@@ -19,8 +18,8 @@ Thumbs.db
 *.swo
 
 # Internal Agent & Planning Specs
-PLAN.md
-DECISIONS.md
-AGENTS.md
+/PLAN.md
+/DECISIONS.md
+/AGENTS.md
 .heald/
 skills/system/

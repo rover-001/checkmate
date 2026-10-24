@@ -1,0 +1,17 @@
+{
+  "description": "Inject checkmate goal-driven rules at session start",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/checkmate-instructions.js\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
