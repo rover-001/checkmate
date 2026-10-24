@@ -1,0 +1,5 @@
+{
+  "id": "bugfix-10-event-leak",
+  "bucket": "bugfix",
+  "prompt": "Fix tracker.js so unsubscribe() removes the exact listener specified, avoiding duplicate or lingering executions. Run node test.js."
+}

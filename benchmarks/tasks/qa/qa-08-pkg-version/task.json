@@ -1,0 +1,5 @@
+{
+  "id": "qa-08-pkg-version",
+  "bucket": "qa",
+  "prompt": "What is the declared version of zod in package.json? Output only the exact version string including any range prefix."
+}

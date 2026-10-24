@@ -1,0 +1,5 @@
+{
+  "id": "bugfix-08-floating-point",
+  "bucket": "bugfix",
+  "prompt": "Fix addCurrency in money.js so precision issues like 0.1 + 0.2 are avoided and results round properly to 2 decimal places. Run node test.js."
+}

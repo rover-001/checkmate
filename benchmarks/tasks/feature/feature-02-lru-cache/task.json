@@ -1,0 +1,5 @@
+{
+  "id": "feature-02-lru-cache",
+  "bucket": "feature",
+  "prompt": "In cache.js, implement class LRUCache with constructor(capacity) and methods get(key) and put(key, value). get(key) returns the value if present, or -1 if not. put(key, value) sets or updates key. If keys exceed capacity, it evicts the least recently used key. Export LRUCache as a named export."
+}

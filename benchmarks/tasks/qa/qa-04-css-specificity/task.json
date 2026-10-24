@@ -1,0 +1,5 @@
+{
+  "id": "qa-04-css-specificity",
+  "bucket": "qa",
+  "prompt": "In styles.css, which selector has the highest CSS specificity? Output only the selector string."
+}

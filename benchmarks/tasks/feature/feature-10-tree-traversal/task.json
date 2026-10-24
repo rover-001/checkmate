@@ -1,0 +1,5 @@
+{
+  "id": "feature-10-tree-traversal",
+  "bucket": "feature",
+  "prompt": "In tree.js, implement export function findNode(root, predicate) returning the first node matching predicate(node) or null, and export function collectValues(root) returning an array of node.val in depth-first preorder. Node structure: { val, children: [...] }."
+}

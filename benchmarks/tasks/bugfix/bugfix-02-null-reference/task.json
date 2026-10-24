@@ -1,0 +1,5 @@
+{
+  "id": "bugfix-02-null-reference",
+  "bucket": "bugfix",
+  "prompt": "Fix the TypeError in getNested.js when accessing properties through null or undefined values. Run node test.js to reproduce."
+}

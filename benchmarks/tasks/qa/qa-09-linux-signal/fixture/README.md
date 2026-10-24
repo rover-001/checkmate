@@ -1,0 +1,1 @@
+# Linux Signals\nStandard signals and numeric identifiers.\n

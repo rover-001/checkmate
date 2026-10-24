@@ -1,0 +1,1 @@
+-- SQL Reference Schema\nSELECT department, COUNT(*) FROM employees GROUP BY department;\n

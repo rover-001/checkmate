@@ -1,0 +1,5 @@
+{
+  "id": "qa-10-complexity-class",
+  "bucket": "qa",
+  "prompt": "What is the worst-case time complexity of the algorithm in search.js? Output in Big-O notation, e.g. O(something)."
+}

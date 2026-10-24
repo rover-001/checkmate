@@ -1,0 +1,5 @@
+{
+  "id": "qa-05-sql-aggregate",
+  "bucket": "qa",
+  "prompt": "What SQL clause is used to filter the result groups of an aggregate query? Output only the keyword."
+}

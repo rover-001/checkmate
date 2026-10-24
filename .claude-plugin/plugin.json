@@ -1,0 +1,11 @@
+{
+  "name": "checkmate",
+  "version": "1.0.0",
+  "description": "Goal-driven mode for AI coding agents. Reach the user's win condition in the fewest moves.",
+  "author": {
+    "name": "Parth Sharma",
+    "email": "sharmaparth.developer@gmail.com"
+  },
+  "repository": "https://github.com/rover-001/checkmate",
+  "license": "MIT"
+}

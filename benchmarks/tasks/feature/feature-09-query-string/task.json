@@ -1,0 +1,5 @@
+{
+  "id": "feature-09-query-string",
+  "bucket": "feature",
+  "prompt": "In query.js, implement export function stringify(obj) and export function parse(str). stringify converts an object of string/number values to URL query string (without leading '?'). parse converts a query string (with or without leading '?') to an object. Keys and values must be properly URI decoded/encoded."
+}

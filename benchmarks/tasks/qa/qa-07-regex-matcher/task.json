@@ -1,0 +1,5 @@
+{
+  "id": "qa-07-regex-matcher",
+  "bucket": "qa",
+  "prompt": "How many lines in data.txt contain a valid IPv4 address? Output only the integer count."
+}

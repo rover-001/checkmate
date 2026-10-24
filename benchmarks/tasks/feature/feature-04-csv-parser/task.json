@@ -1,0 +1,5 @@
+{
+  "id": "feature-04-csv-parser",
+  "bucket": "feature",
+  "prompt": "In csv.js, implement export function parseCSV(text) that parses a CSV string into an array of objects. The first row defines the keys (headers). Handle comma separators, quoted fields with commas inside (e.g. \"Doe, John\"), and trimmed field values. Export parseCSV as named export."
+}

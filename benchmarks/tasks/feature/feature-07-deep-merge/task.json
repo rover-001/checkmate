@@ -1,0 +1,5 @@
+{
+  "id": "feature-07-deep-merge",
+  "bucket": "feature",
+  "prompt": "In merge.js, implement export function deepMerge(target, source) that recursively merges plain objects from source into target, returning a new object without mutating target or source. Arrays and primitives from source overwrite target."
+}

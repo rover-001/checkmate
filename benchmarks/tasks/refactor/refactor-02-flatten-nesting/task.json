@@ -1,0 +1,5 @@
+{
+  "id": "refactor-02-flatten-nesting",
+  "bucket": "refactor",
+  "prompt": "Refactor processOrder in processOrder.js using early return guard clauses to eliminate nested if-else statements. No line inside the function should have more than 2 indentation levels (8 spaces). node test.js must still pass."
+}

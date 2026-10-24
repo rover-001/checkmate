@@ -1,0 +1,5 @@
+{
+  "id": "feature-06-retry-async",
+  "bucket": "feature",
+  "prompt": "In retry.js, implement export async function retry(fn, { maxRetries = 3, delayMs = 10 } = {}). It executes async function fn(). If fn rejects, it waits delayMs and retries up to maxRetries attempts. If all fail, it rejects with the last caught error."
+}

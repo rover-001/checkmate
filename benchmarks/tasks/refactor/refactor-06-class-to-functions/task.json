@@ -1,0 +1,5 @@
+{
+  "id": "refactor-06-class-to-functions",
+  "bucket": "refactor",
+  "prompt": "Refactor mathUtils.js from a class with static methods into exported pure functions add, multiply, and clamp. The class keyword must no longer appear in mathUtils.js. node test.js must pass."
+}

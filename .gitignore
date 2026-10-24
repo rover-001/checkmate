@@ -1,0 +1,26 @@
+# Distribution & Build
+dist/
+node_modules/
+
+# Environment & Logs
+.env
+.env.*
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# System & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Internal Agent & Planning Specs
+PLAN.md
+DECISIONS.md
+AGENTS.md
+.heald/
+skills/system/

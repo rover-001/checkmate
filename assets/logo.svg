@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="100%" height="auto">
+  <!-- Solid Dark Background — No gradients, no glows -->
+  <rect width="1200" height="320" rx="16" ry="16" fill="#0a0a0a" stroke="#262626" stroke-width="2" />
+
+  <!-- Ground Plane Line -->
+  <line x1="50" y1="245" x2="480" y2="245" stroke="#333333" stroke-width="2" stroke-linecap="round" />
+
+  <!-- ================= CHESS PIECES (MONOCHROME SILHOUETTES) ================= -->
+
+  <!-- 1. ROOK (Black Piece, Left, x=100) -->
+  <g transform="translate(100, 175) scale(0.68)" fill="#1c1c1c" stroke="#525252" stroke-width="2">
+    <!-- Battlements -->
+    <rect x="-24" y="-70" width="11" height="18" rx="1"/>
+    <rect x="-6" y="-70" width="12" height="18" rx="1"/>
+    <rect x="13" y="-70" width="11" height="18" rx="1"/>
+    <!-- Ledge -->
+    <rect x="-28" y="-52" width="56" height="10" rx="2"/>
+    <!-- Tower Body -->
+    <path d="M-22,-42 L-26,45 L26,45 L22,-42 Z" />
+    <!-- Base -->
+    <rect x="-30" y="45" width="60" height="12" rx="2"/>
+    <rect x="-35" y="57" width="70" height="14" rx="3"/>
+  </g>
+
+  <!-- 2. KNIGHT (White Piece, Left-Center, x=175) -->
+  <g transform="translate(175, 168) scale(0.72)" fill="#f5f5f0">
+    <path d="M-10,-78 C-16,-78 -24,-74 -28,-68 C-32,-62 -30,-50 -38,-35 C-44,-24 -46,-12 -42,-2 C-38,6 -28,8 -20,2 C-24,12 -22,25 -16,42 L24,42 C26,20 22,-8 14,-32 C12,-38 18,-45 20,-55 C22,-65 14,-75 2,-78 Z" />
+    <path d="M-6,-82 L-14,-68 L-2,-68 Z" />
+    <circle cx="-26" cy="-42" r="3" fill="#0a0a0a" />
+    <rect x="-28" y="42" width="58" height="12" rx="3" />
+    <rect x="-34" y="54" width="70" height="14" rx="4" />
+  </g>
+
+  <!-- 3. THE KING (White Piece, Centerpiece, x=265) -->
+  <g transform="translate(265, 148) scale(0.88)" fill="#f5f5f0">
+    <!-- Cross on Top -->
+    <rect x="-5" y="-128" width="10" height="30" rx="1"/>
+    <rect x="-15" y="-120" width="30" height="10" rx="1"/>
+    <!-- Crown Dome -->
+    <ellipse cx="0" cy="-84" rx="26" ry="22"/>
+    <ellipse cx="0" cy="-74" rx="28" ry="7" fill="#e5e5e5" />
+    <!-- Neck -->
+    <rect x="-11" y="-66" width="22" height="16" rx="2"/>
+    <!-- Collar Ring -->
+    <ellipse cx="0" cy="-50" rx="25" ry="7"/>
+    <!-- Body Column -->
+    <path d="M-20,-50 L-32,50 Q-34,58 -24,62 L24,62 Q34,58 32,50 L20,-50 Z"/>
+    <!-- Base Platform -->
+    <rect x="-42" y="62" width="84" height="14" rx="3"/>
+    <rect x="-50" y="76" width="100" height="12" rx="4"/>
+    <rect x="-56" y="88" width="112" height="15" rx="5"/>
+  </g>
+
+  <!-- 4. QUEEN (White Piece, Right-Center, x=355) -->
+  <g transform="translate(355, 158) scale(0.80)" fill="#f5f5f0">
+    <!-- 5 Crown Peaks & Pearls -->
+    <circle cx="-28" cy="-84" r="4.5"/>
+    <circle cx="-14" cy="-90" r="4.5"/>
+    <circle cx="0" cy="-93" r="5"/>
+    <circle cx="14" cy="-90" r="4.5"/>
+    <circle cx="28" cy="-84" r="4.5"/>
+    <!-- Coronet -->
+    <path d="M-28,-80 L-20,-62 L-14,-86 L-7,-60 L0,-88 L7,-60 L14,-86 L20,-62 L28,-80 L22,-52 L-22,-52 Z" />
+    <!-- Neck -->
+    <rect x="-10" y="-52" width="20" height="14" rx="2"/>
+    <ellipse cx="0" cy="-38" rx="22" ry="6"/>
+    <!-- Hourglass Body -->
+    <path d="M-18,-38 Q-12,0 -26,45 L26,45 Q12,0 18,-38 Z"/>
+    <!-- Base -->
+    <rect x="-36" y="45" width="72" height="12" rx="3"/>
+    <rect x="-44" y="57" width="88" height="14" rx="4"/>
+  </g>
+
+  <!-- 5. BISHOP (Black Piece, Right, x=430) -->
+  <g transform="translate(430, 172) scale(0.70)" fill="#1c1c1c" stroke="#525252" stroke-width="2">
+    <circle cx="0" cy="-80" r="6" fill="#525252" stroke="none" />
+    <path d="M0,-74 C-20,-70 -24,-50 -20,-34 C-16,-20 -6,-16 0,-14 C6,-16 16,-20 20,-34 C24,-50 20,-70 0,-74 Z"/>
+    <line x1="-8" y1="-58" x2="6" y2="-40" stroke="#0a0a0a" stroke-width="3" stroke-linecap="round"/>
+    <ellipse cx="0" cy="-14" rx="20" ry="6"/>
+    <path d="M-16,-14 L-22,46 L22,46 L16,-14 Z"/>
+    <rect x="-30" y="46" width="60" height="12" rx="2"/>
+    <rect x="-36" y="58" width="72" height="14" rx="3"/>
+  </g>
+
+  <!-- 6. PAWN (White Piece, Foreground, x=215, y=205) -->
+  <g transform="translate(215, 208) scale(0.55)" fill="#f5f5f0">
+    <circle cx="0" cy="-48" r="16"/>
+    <rect x="-7" y="-32" width="14" height="10" rx="2"/>
+    <ellipse cx="0" cy="-22" rx="14" ry="4"/>
+    <path d="M-10,-22 L-16,30 L16,30 L10,-22 Z"/>
+    <rect x="-22" y="30" width="44" height="10" rx="3"/>
+    <rect x="-26" y="40" width="52" height="12" rx="4"/>
+  </g>
+
+  <!-- 7. PAWN (White Piece, Foreground, x=315, y=205) -->
+  <g transform="translate(315, 208) scale(0.55)" fill="#f5f5f0">
+    <circle cx="0" cy="-48" r="16"/>
+    <rect x="-7" y="-32" width="14" height="10" rx="2"/>
+    <ellipse cx="0" cy="-22" rx="14" ry="4"/>
+    <path d="M-10,-22 L-16,30 L16,30 L10,-22 Z"/>
+    <rect x="-22" y="30" width="44" height="10" rx="3"/>
+    <rect x="-26" y="40" width="52" height="12" rx="4"/>
+  </g>
+
+  <!-- Vertical Divider -->
+  <line x1="510" y1="45" x2="510" y2="275" stroke="#262626" stroke-width="2" stroke-linecap="round" />
+
+  <!-- ================= TYPOGRAPHY (PURE MONOCHROME) ================= -->
+
+  <!-- Top Metadata -->
+  <text x="550" y="75" font-family="'JetBrains Mono', 'SF Mono', 'Courier New', monospace" font-size="13" font-weight="700" fill="#737373" letter-spacing="2">GOAL-DRIVEN AI AGENT</text>
+  <text x="1100" y="75" text-anchor="end" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="13" font-weight="700" fill="#737373" letter-spacing="1">v1.0.0</text>
+
+  <!-- Main Wordmark -->
+  <text x="546" y="152" font-family="'JetBrains Mono', 'Fira Code', 'Courier New', monospace" font-size="78" font-weight="800" fill="#f5f5f0" letter-spacing="4">checkmate</text>
+
+  <!-- Tagline -->
+  <text x="550" y="200" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="24" font-weight="400" fill="#a3a3a3" letter-spacing="0.5">Mate in the fewest moves.</text>
+
+  <!-- Bottom Modes / Rules Metadata -->
+  <g transform="translate(550, 246)">
+    <!-- Flat monochrome badges -->
+    <rect x="0" y="0" width="60" height="26" rx="4" fill="#171717" stroke="#404040" stroke-width="1"/>
+    <text x="30" y="17" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="600" fill="#d4d4d4">lite</text>
+
+    <rect x="68" y="0" width="60" height="26" rx="4" fill="#f5f5f0"/>
+    <text x="98" y="17" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" fill="#0a0a0a">full</text>
+
+    <rect x="136" y="0" width="60" height="26" rx="4" fill="#171717" stroke="#404040" stroke-width="1"/>
+    <text x="166" y="17" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="600" fill="#d4d4d4">ultra</text>
+
+    <text x="215" y="17" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="500" fill="#737373">/  9 Core Rules  /  Zero Dependencies</text>
+  </g>
+</svg>

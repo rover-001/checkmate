@@ -1,0 +1,5 @@
+{
+  "id": "bugfix-09-prototype-pollution",
+  "bucket": "bugfix",
+  "prompt": "Fix security vulnerability in extend.js preventing __proto__ and constructor property injection during recursive object extension. Run node test.js."
+}

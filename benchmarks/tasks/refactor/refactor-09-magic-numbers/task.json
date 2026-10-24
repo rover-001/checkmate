@@ -1,0 +1,5 @@
+{
+  "id": "refactor-09-magic-numbers",
+  "bucket": "refactor",
+  "prompt": "Refactor pricing.js by extracting inline magic numbers (tax rate 0.0825, discount threshold 100, discount rate 0.05, shipping fee 15) into named const constants TAX_RATE, DISCOUNT_THRESHOLD, DISCOUNT_RATE, and SHIPPING_FEE at top of file. node test.js must pass."
+}

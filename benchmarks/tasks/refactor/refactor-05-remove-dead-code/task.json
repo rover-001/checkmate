@@ -1,0 +1,5 @@
+{
+  "id": "refactor-05-remove-dead-code",
+  "bucket": "refactor",
+  "prompt": "Remove dead exports oldTrack, legacyFormat, and v1Payload from analytics.js. Keep active exports track and flush. node test.js must pass."
+}

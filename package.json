@@ -1,0 +1,37 @@
+{
+  "name": "checkmate",
+  "version": "1.0.0",
+  "description": "Goal-driven mode for AI coding agents. Reach the user's win condition in the fewest moves.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Parth Sharma <sharmaparth.developer@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rover-001/checkmate"
+  },
+  "scripts": {
+    "test": "node --test 'tests/*.test.mjs' benchmarks/stats.test.mjs",
+    "build": "node scripts/build.mjs",
+    "benchmark": "node benchmarks/run.mjs",
+    "benchmark:validate": "node benchmarks/validate.mjs",
+    "test:stats": "node --test benchmarks/stats.test.mjs",
+    "report": "node scripts/report.mjs",
+    "gain": "node skills/checkmate-gain/gain.mjs"
+  },
+  "keywords": [
+    "claude-code",
+    "ai-agent",
+    "skill",
+    "plugin",
+    "goal-driven",
+    "coding-agent"
+  ],
+  "files": [
+    "rules/",
+    "skills/",
+    "hooks/",
+    "commands/",
+    "assets/",
+    ".claude-plugin/"
+  ]
+}

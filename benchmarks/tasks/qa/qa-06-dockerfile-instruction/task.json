@@ -1,0 +1,5 @@
+{
+  "id": "qa-06-dockerfile-instruction",
+  "bucket": "qa",
+  "prompt": "In a multi-stage Dockerfile, what flag on the COPY instruction copies files from a previous build stage named 'builder'? Output only the flag and its value (e.g. --flag=val)."
+}

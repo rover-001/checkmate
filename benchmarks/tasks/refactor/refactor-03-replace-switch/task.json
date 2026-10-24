@@ -1,0 +1,5 @@
+{
+  "id": "refactor-03-replace-switch",
+  "bucket": "refactor",
+  "prompt": "Refactor calculator.js to replace the switch statement with an operations lookup dictionary/map. The switch keyword must not appear in calculator.js. node test.js must still pass."
+}

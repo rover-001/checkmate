@@ -1,0 +1,5 @@
+{
+  "id": "refactor-04-simplify-boolean",
+  "bucket": "refactor",
+  "prompt": "Simplify boolean logic in permissions.js. Remove redundant === true checks and ternary/if-else returns. Reduce lines to 20 or fewer. node test.js must pass."
+}

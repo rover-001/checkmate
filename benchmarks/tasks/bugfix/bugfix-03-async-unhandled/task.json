@@ -1,0 +1,5 @@
+{
+  "id": "bugfix-03-async-unhandled",
+  "bucket": "bugfix",
+  "prompt": "Fix fetchUserData in fetchUser.js so it properly awaits the fetcher and returns { error: err.message } on failure instead of throwing unhandled errors. Run node test.js."
+}

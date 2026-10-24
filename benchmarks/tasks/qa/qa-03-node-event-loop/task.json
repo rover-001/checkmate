@@ -1,0 +1,5 @@
+{
+  "id": "qa-03-node-event-loop",
+  "bucket": "qa",
+  "prompt": "In Node.js, which phase of the event loop executes setImmediate() callbacks? Name only the phase."
+}

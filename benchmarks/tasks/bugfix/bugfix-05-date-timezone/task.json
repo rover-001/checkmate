@@ -1,0 +1,5 @@
+{
+  "id": "bugfix-05-date-timezone",
+  "bucket": "bugfix",
+  "prompt": "Fix formatISODate in formatter.js to format in UTC YYYY-MM-DD regardless of local timezone. Run node test.js."
+}

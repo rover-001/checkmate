@@ -1,0 +1,5 @@
+{
+  "id": "bugfix-06-json-parse-crash",
+  "bucket": "bugfix",
+  "prompt": "Fix loadConfig(jsonStr, defaultConfig) in config.js so invalid JSON safely returns defaultConfig without crashing. Run node test.js."
+}

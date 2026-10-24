@@ -1,0 +1,5 @@
+{
+  "id": "qa-02-git-rebase-command",
+  "bucket": "qa",
+  "prompt": "What git command aborts an in-progress merge? Output only the command."
+}

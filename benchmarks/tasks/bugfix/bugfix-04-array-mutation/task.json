@@ -1,0 +1,5 @@
+{
+  "id": "bugfix-04-array-mutation",
+  "bucket": "bugfix",
+  "prompt": "Fix sortUsers in sorter.js so it returns a sorted copy of the array without mutating the input array. Run node test.js."
+}

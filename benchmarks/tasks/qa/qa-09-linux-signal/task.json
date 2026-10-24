@@ -1,0 +1,5 @@
+{
+  "id": "qa-09-linux-signal",
+  "bucket": "qa",
+  "prompt": "What integer signal number corresponds to SIGKILL on standard Linux x86_64? Output only the number."
+}

@@ -1,0 +1,5 @@
+{
+  "id": "bugfix-01-off-by-one",
+  "bucket": "bugfix",
+  "prompt": "Fix the bug in range.js. Run node test.js to see the failure. Do not alter test.js."
+}

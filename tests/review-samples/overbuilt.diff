@@ -1,0 +1,34 @@
+--- a/src/discount.js
++++ b/src/discount.js
+@@ -1,3 +1,35 @@
++// Abstract strategy layer for calculating discounts
++export class AbstractDiscountStrategy {
++  calculate(price) { throw new Error("Not implemented"); }
++}
++
++// Factory pattern for discount strategies
++export class DiscountStrategyFactory {
++  static create(type, options = {}) {
++    if (type === "percentage") return new PercentageDiscount(options);
++    throw new Error("Unknown strategy: " + type);
++  }
++}
++
++// Speculative configuration schema with unrequested options
++export const DEFAULT_DISCOUNT_CONFIG = {
++  maxDiscountRate: 0.8,
++  enableTieredEvaluation: true,
++  fallbackMode: "graceful",
++  retryAttempts: 3,
++  cacheTTLMs: 3600000,
++};
++
++// Unrequested loyalty point calculation system
++export function calculateLoyaltyPoints(userId, purchaseAmount) {
++  const pointsPerDollar = 10;
++  return purchaseAmount * pointsPerDollar;
++}
++
++export function calculateDiscount(price, rate) {
++  return price * (1 - rate);
++}

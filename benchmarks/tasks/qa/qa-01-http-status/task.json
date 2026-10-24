@@ -1,0 +1,5 @@
+{
+  "id": "qa-01-http-status",
+  "bucket": "qa",
+  "prompt": "What is the standard HTTP status code for 'I\\'m a teapot'? Output only the 3-digit number."
+}

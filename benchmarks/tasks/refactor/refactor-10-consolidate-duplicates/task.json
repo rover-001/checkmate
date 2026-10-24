@@ -1,0 +1,5 @@
+{
+  "id": "refactor-10-consolidate-duplicates",
+  "bucket": "refactor",
+  "prompt": "Consolidate repeated non-empty string validation in validatorRules.js by extracting a shared helper isNonEmptyString(val). Reduce line count by at least 15 lines (target <= 45 lines). node test.js must pass."
+}

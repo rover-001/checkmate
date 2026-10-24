@@ -1,0 +1,5 @@
+{
+  "id": "bugfix-07-regex-redos",
+  "bucket": "bugfix",
+  "prompt": "Fix email validation in validator.js so tags with '+' (like user+tag@example.com) are recognized as valid. Run node test.js."
+}

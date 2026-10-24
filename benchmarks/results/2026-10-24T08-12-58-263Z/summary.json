@@ -1,0 +1,212 @@
+{
+  "generatedAt": "2026-10-24T08:12:58.264Z",
+  "model": "claude-opus-5-5",
+  "runsPerTask": 3,
+  "arms": {
+    "baseline": {
+      "runs": 120,
+      "passed": 104,
+      "passRate": 0.8667,
+      "medianOutputTokens": 562.5,
+      "iqrOutputTokens": [
+        146,
+        671
+      ],
+      "medianTotalTokens": 53828,
+      "medianSteps": 4,
+      "medianWallMs": 6483.5
+    },
+    "checkmate": {
+      "runs": 120,
+      "passed": 118,
+      "passRate": 0.9833,
+      "medianOutputTokens": 274,
+      "iqrOutputTokens": [
+        22,
+        331
+      ],
+      "medianTotalTokens": 42897.5,
+      "medianSteps": 2,
+      "medianWallMs": 3790.5
+    },
+    "ultra": {
+      "runs": 120,
+      "passed": 115,
+      "passRate": 0.9583,
+      "medianOutputTokens": 203,
+      "iqrOutputTokens": [
+        11,
+        240
+      ],
+      "medianTotalTokens": 39090,
+      "medianSteps": 2,
+      "medianWallMs": 3075
+    }
+  },
+  "buckets": {
+    "feature": {
+      "baseline": {
+        "runs": 30,
+        "passed": 25,
+        "passRate": 0.8333,
+        "medianOutputTokens": 755,
+        "iqrOutputTokens": [
+          701.5,
+          818.5
+        ],
+        "medianTotalTokens": 65590,
+        "medianSteps": 5,
+        "medianWallMs": 9183
+      },
+      "checkmate": {
+        "runs": 30,
+        "passed": 30,
+        "passRate": 1,
+        "medianOutputTokens": 367,
+        "iqrOutputTokens": [
+          341,
+          390
+        ],
+        "medianTotalTokens": 49138,
+        "medianSteps": 3,
+        "medianWallMs": 4985.5
+      },
+      "ultra": {
+        "runs": 30,
+        "passed": 28,
+        "passRate": 0.9333,
+        "medianOutputTokens": 273,
+        "iqrOutputTokens": [
+          262,
+          286.5
+        ],
+        "medianTotalTokens": 45276,
+        "medianSteps": 2,
+        "medianWallMs": 4254.5
+      }
+    },
+    "bugfix": {
+      "baseline": {
+        "runs": 30,
+        "passed": 24,
+        "passRate": 0.8,
+        "medianOutputTokens": 515.5,
+        "iqrOutputTokens": [
+          484.5,
+          549
+        ],
+        "medianTotalTokens": 49732.5,
+        "medianSteps": 4,
+        "medianWallMs": 5965
+      },
+      "checkmate": {
+        "runs": 30,
+        "passed": 29,
+        "passRate": 0.9667,
+        "medianOutputTokens": 244,
+        "iqrOutputTokens": [
+          225.5,
+          269
+        ],
+        "medianTotalTokens": 40928,
+        "medianSteps": 2,
+        "medianWallMs": 3430
+      },
+      "ultra": {
+        "runs": 30,
+        "passed": 29,
+        "passRate": 0.9667,
+        "medianOutputTokens": 192,
+        "iqrOutputTokens": [
+          174.5,
+          202.5
+        ],
+        "medianTotalTokens": 38920,
+        "medianSteps": 2,
+        "medianWallMs": 2906
+      }
+    },
+    "refactor": {
+      "baseline": {
+        "runs": 30,
+        "passed": 27,
+        "passRate": 0.9,
+        "medianOutputTokens": 624,
+        "iqrOutputTokens": [
+          589,
+          665
+        ],
+        "medianTotalTokens": 57984,
+        "medianSteps": 4,
+        "medianWallMs": 7220
+      },
+      "checkmate": {
+        "runs": 30,
+        "passed": 29,
+        "passRate": 0.9667,
+        "medianOutputTokens": 308,
+        "iqrOutputTokens": [
+          280,
+          322
+        ],
+        "medianTotalTokens": 45004,
+        "medianSteps": 3,
+        "medianWallMs": 4120
+      },
+      "ultra": {
+        "runs": 30,
+        "passed": 29,
+        "passRate": 0.9667,
+        "medianOutputTokens": 218,
+        "iqrOutputTokens": [
+          205.5,
+          229
+        ],
+        "medianTotalTokens": 41398,
+        "medianSteps": 2,
+        "medianWallMs": 3302
+      }
+    },
+    "qa": {
+      "baseline": {
+        "runs": 30,
+        "passed": 28,
+        "passRate": 0.9333,
+        "medianOutputTokens": 121.5,
+        "iqrOutputTokens": [
+          110,
+          136.5
+        ],
+        "medianTotalTokens": 15121.5,
+        "medianSteps": 1,
+        "medianWallMs": 1911
+      },
+      "checkmate": {
+        "runs": 30,
+        "passed": 30,
+        "passRate": 1,
+        "medianOutputTokens": 18,
+        "iqrOutputTokens": [
+          15,
+          19
+        ],
+        "medianTotalTokens": 15218,
+        "medianSteps": 1,
+        "medianWallMs": 1427.5
+      },
+      "ultra": {
+        "runs": 30,
+        "passed": 29,
+        "passRate": 0.9667,
+        "medianOutputTokens": 8,
+        "iqrOutputTokens": [
+          7,
+          9
+        ],
+        "medianTotalTokens": 15308,
+        "medianSteps": 1,
+        "medianWallMs": 1200
+      }
+    }
+  }
+}

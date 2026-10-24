@@ -1,0 +1,5 @@
+{
+  "id": "feature-03-event-emitter",
+  "bucket": "feature",
+  "prompt": "In events.js, implement class EventEmitter with methods on(event, listener), off(event, listener), once(event, listener), and emit(event, ...args). emit returns true if event had listeners, false otherwise. Export EventEmitter as named export."
+}

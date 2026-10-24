@@ -1,0 +1,5 @@
+{
+  "id": "refactor-07-async-await",
+  "bucket": "refactor",
+  "prompt": "Refactor runPipeline in pipeline.js to use async/await syntax instead of .then() callbacks. The word .then must not appear. node test.js must pass."
+}

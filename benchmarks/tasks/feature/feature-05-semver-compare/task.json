@@ -1,0 +1,5 @@
+{
+  "id": "feature-05-semver-compare",
+  "bucket": "feature",
+  "prompt": "In semver.js, implement export function compare(v1, v2) that takes two semver strings 'MAJOR.MINOR.PATCH' (e.g. '1.2.3') and returns 1 if v1 > v2, -1 if v1 < v2, and 0 if v1 === v2. Compare numerically by major, minor, patch."
+}

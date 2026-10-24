@@ -1,0 +1,5 @@
+{
+  "id": "feature-01-slugify",
+  "bucket": "feature",
+  "prompt": "In index.js, implement export function slugify(str) that converts a string to lower-case, replaces spaces and underscores with hyphens, removes all non-alphanumeric characters except hyphens, and collapses multiple consecutive hyphens into a single hyphen. It should also trim leading and trailing hyphens. Export it as named export slugify."
+}

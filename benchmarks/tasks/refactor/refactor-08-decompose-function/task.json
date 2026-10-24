@@ -1,0 +1,5 @@
+{
+  "id": "refactor-08-decompose-function",
+  "bucket": "refactor",
+  "prompt": "Decompose buildSummary in buildSummary.js into three separate internal helper functions: parseData, computeMetrics, and formatReport. Keep buildSummary as the main export. node test.js must pass."
+}

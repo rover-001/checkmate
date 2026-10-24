@@ -1,0 +1,5 @@
+{
+  "id": "refactor-01-extract-helper",
+  "bucket": "refactor",
+  "prompt": "Refactor report.js by extracting duplicated formatting logic into helper functions. Reduce total lines of report.js to 45 lines or fewer. Tests in test.js must still pass."
+}

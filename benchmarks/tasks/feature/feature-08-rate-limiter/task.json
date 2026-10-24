@@ -1,0 +1,5 @@
+{
+  "id": "feature-08-rate-limiter",
+  "bucket": "feature",
+  "prompt": "In limiter.js, implement class TokenBucket with constructor(capacity, refillRatePerSec) where tokens start at capacity. Implement method tryConsume(tokens = 1) which refills tokens based on elapsed time (capped at capacity), and returns true if sufficient tokens were consumed, or false otherwise."
+}
