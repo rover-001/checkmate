@@ -19,7 +19,7 @@ const ULTRA_DELTA = readFileSync(join(ROOT_DIR, 'rules', 'modes', 'ultra.md'), '
  * Helper to spawn the hook script with temporary state and config dirs.
  * Guarantees real user home directory (~/.config/checkmate) is never touched.
  */
-function runHook({ env = {}, state = null, config = null, args = [] } = {}) {
+function runHook({ env = {}, state = null, config = null, args = [], input = null } = {}) {
   const tempDir = mkdtempSync(join(tmpdir(), 'checkmate-hook-test-'));
   const stateDir = join(tempDir, 'state');
   const configDir = join(tempDir, 'config');
@@ -61,6 +61,7 @@ function runHook({ env = {}, state = null, config = null, args = [] } = {}) {
       env: childEnv,
       encoding: 'utf8',
       stdio: ['pipe', 'pipe', 'pipe'],
+      input: input !== null ? (typeof input === 'string' ? input : JSON.stringify(input)) : undefined,
     });
 
     let savedState = null;
@@ -247,21 +248,21 @@ describe('checkmate hook instructions', () => {
   });
 
   describe('CLI setter (--set <mode>)', () => {
-    it('sets mode to lite, writes state, and prints lite payload', () => {
+    it('sets mode to lite, writes project state, and prints lite payload', () => {
       const res = runHook({ args: ['--set', 'lite'] });
       assert.equal(res.exitCode, 0);
       assert.ok(res.stdout.includes(LITE_DELTA));
-      assert.equal(res.state?.mode, 'lite');
+      assert.equal(res.state?.projects?.[process.cwd()], 'lite');
     });
 
-    it('sets mode to off, writes state, and outputs "checkmate: off"', () => {
+    it('sets mode to off, writes project state, and outputs "checkmate: off"', () => {
       const res = runHook({ args: ['--set', 'off'] });
       assert.equal(res.exitCode, 0);
       assert.equal(res.stdout, 'checkmate: off\n');
-      assert.equal(res.state?.mode, 'off');
+      assert.equal(res.state?.projects?.[process.cwd()], 'off');
     });
 
-    it('isolates mode per project directory', () => {
+    it('isolates mode per project directory without leaking to other projects', () => {
       const projectA = '/tmp/fake-project-a';
       const projectB = '/tmp/fake-project-b';
       const res = runHook({
@@ -277,13 +278,50 @@ describe('checkmate hook instructions', () => {
       });
       assert.ok(resA.stdout.includes(ULTRA_DELTA));
 
-      // Hook run in project B falls back to global mode (or config)
+      // Hook run in project B with res.state unchanged falls back to full (does NOT leak ultra)
       const resB = runHook({
-        state: { ...res.state, mode: 'lite' },
+        state: res.state,
         env: { CHECKMATE_PROJECT_DIR: projectB },
       });
-      assert.ok(resB.stdout.includes(LITE_DELTA));
+      assert.ok(resB.stdout.includes(FULL_DELTA));
       assert.ok(!resB.stdout.includes(ULTRA_DELTA));
+    });
+
+    it('--set --global updates top-level global mode', () => {
+      const res = runHook({ args: ['--set', 'ultra', '--global'] });
+      assert.equal(res.exitCode, 0);
+      assert.equal(res.state?.mode, 'ultra');
+    });
+
+    it('resolves session and project directory from Claude Code hook stdin JSON', () => {
+      const sessionId = 'claude-sess-999';
+      const projectDir = '/tmp/project-from-hook-stdin';
+      const res = runHook({
+        state: {
+          sessions: { [sessionId]: 'ultra' },
+          projects: { [projectDir]: 'lite' },
+        },
+        input: {
+          session_id: sessionId,
+          cwd: projectDir,
+        },
+      });
+      assert.equal(res.exitCode, 0);
+      // Session takes precedence over project
+      assert.ok(res.stdout.includes(ULTRA_DELTA));
+
+      // Project resolves when session has no override
+      const resProject = runHook({
+        state: {
+          projects: { [projectDir]: 'lite' },
+        },
+        input: {
+          session_id: 'unknown-session',
+          cwd: projectDir,
+        },
+      });
+      assert.equal(resProject.exitCode, 0);
+      assert.ok(resProject.stdout.includes(LITE_DELTA));
     });
 
     it('isolates mode per session id', () => {
@@ -313,7 +351,7 @@ describe('checkmate hook instructions', () => {
           delete process.env.CHECKMATE_CONFIG_DIR;
           await import(${JSON.stringify(HOOK_SCRIPT)});
         `;
-        execFileSync(process.execPath, ['--input-type=module', '-e', testScript, '--', '--set', 'ultra'], {
+        execFileSync(process.execPath, ['--input-type=module', '-e', testScript, '--', '--set', 'ultra', '--global'], {
           encoding: 'utf8',
         });
         const writtenState = join(fakeAppData, 'checkmate', 'state.json');

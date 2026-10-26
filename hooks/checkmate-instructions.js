@@ -9,7 +9,8 @@
 //
 // CLI setter:
 //   node checkmate-instructions.js --set <lite|full|ultra|off> [--project <path>] [--session <id>] [--global]
-// Writes mode to state.json keyed by project directory and session, and prints rules payload (or 'checkmate: off').
+// Scopes mode strictly to the current project and session in state.json.
+// Top-level mode is left unchanged unless --global is explicitly passed.
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { join, dirname, resolve } from "path";
@@ -21,6 +22,19 @@ const PLUGIN_ROOT = process.env.CLAUDE_PLUGIN_ROOT || join(__dirname, "..");
 
 const VALID_MODES = ["lite", "full", "ultra", "off"];
 
+// Safely read hook input from stdin if piped by Claude Code
+let hookStdin = null;
+try {
+  if (!process.stdin.isTTY) {
+    const raw = readFileSync(0, "utf8");
+    if (raw && raw.trim()) {
+      hookStdin = JSON.parse(raw.trim());
+    }
+  }
+} catch {
+  hookStdin = null;
+}
+
 function getDefaultConfigDir() {
   if (process.platform === "win32" && process.env.APPDATA) {
     return join(process.env.APPDATA, "checkmate");
@@ -29,6 +43,11 @@ function getDefaultConfigDir() {
 }
 
 function getProjectDir() {
+  if (hookStdin && hookStdin.cwd) {
+    try {
+      return resolve(hookStdin.cwd);
+    } catch {}
+  }
   const envProj = process.env.CHECKMATE_PROJECT_DIR;
   if (envProj) return resolve(envProj);
   try {
@@ -39,6 +58,9 @@ function getProjectDir() {
 }
 
 function getSessionId() {
+  if (hookStdin && (hookStdin.session_id || hookStdin.sessionId)) {
+    return hookStdin.session_id || hookStdin.sessionId;
+  }
   return process.env.CHECKMATE_SESSION_ID || null;
 }
 
@@ -156,6 +178,7 @@ try {
     if (sessIdx !== -1 && process.argv[sessIdx + 1]) {
       sessionId = process.argv[sessIdx + 1].trim();
     }
+    const isGlobal = process.argv.includes("--global");
 
     try {
       const stateDir =
@@ -191,10 +214,14 @@ try {
 
       const newState = {
         ...existingState,
-        mode: targetMode,
         projects,
         sessions,
       };
+      if (isGlobal) {
+        newState.mode = targetMode;
+      } else if (existingState.mode !== undefined) {
+        newState.mode = existingState.mode;
+      }
 
       writeFileSync(
         statePath,

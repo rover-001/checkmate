@@ -186,13 +186,27 @@ async function executeRun({ task, arm, runNumber, payload, model, flags }) {
     // 1. Copy fixture to temp directory
     cpSync(task.fixtureDir, tempDir, { recursive: true });
 
-    // Optional realistic context setup
-    const isRealistic = arm.startsWith("realistic") || Boolean(flags && flags.realistic);
+    // Optional realistic context setup (strictly for realistic arms)
+    const isRealistic = arm.startsWith("realistic");
     if (isRealistic) {
+      const claudeDir = join(tempDir, ".claude");
+      mkdirSync(claudeDir, { recursive: true });
+      writeFileSync(
+        join(claudeDir, "settings.json"),
+        JSON.stringify({ outputStyle: "concise" }, null, 2) + "\n",
+        "utf8"
+      );
+
       const realisticClaudeMd = `# Project Guidelines
-- Keep responses concise and focused on the required code changes.
-- Ensure all unit tests pass before completing.
-- Avoid introducing unrequested abstractions, files, or extra dependencies.
+
+## Code Standards
+- Keep code clean, idiomatic, and minimal.
+- Do not introduce unrequested abstractions, files, or extra dependencies.
+- Ensure all tests pass before completing.
+
+## Output Style: Concise
+- Be direct and concise.
+- Stop when the task is done without unnecessary pleasantries or closing offers.
 `;
       writeFileSync(join(tempDir, "CLAUDE.md"), realisticClaudeMd, "utf8");
     }

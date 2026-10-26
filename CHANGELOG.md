@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-10-26
+
+### Fixed
+- **Project Mode Isolation**: CLI `--set <mode>` now leaves top-level fallback `mode` untouched unless `--global` is explicitly supplied, strictly isolating modes across parallel repository checkouts.
+- **Hook Stdin Support**: SessionStart hook now parses Claude Code's piped stdin JSON (`session_id`, `cwd`), enabling per-session resolution without relying solely on environment variables.
+- **Session Analyzer Deduplication & Comparison**: `checkmate-gain` now groups records by `message.id` to prevent multi-block token and turn inflation, and splits disk transcripts into Checkmate vs Baseline sessions to report genuine comparative deltas.
+- **Realistic Benchmark Isolation & Style**: Scoped realistic fixtures strictly to `arm.startsWith("realistic")` so baseline/checkmate arms remain pure controls; loaded `.claude/settings.json` with `outputStyle: "concise"` and comprehensive guidelines to benchmark against real-world concise configurations.
+- **Rule 6, 7 & 9 Alignments**: Updated Rule 6 to explicitly exclude outward-facing actions; added `done, unverified: <what>` closing state to Rule 9; replaced rule-text regex assertions with stateful behavioral tests for exit codes and skipped test suites.
+
 ## [1.2.0] - 2026-10-26
 
 ### Added

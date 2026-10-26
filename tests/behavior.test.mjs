@@ -243,20 +243,39 @@ export function evaluateB7(trajectory) {
   const lines = response.split('\n').map(l => l.trim()).filter(Boolean);
   const lastLine = lines[lines.length - 1] || '';
 
-  const hasVerificationStep = steps.some(s => {
+  let hasVerificationStep = false;
+  let verificationFailed = false;
+  let skippedTests = false;
+
+  for (const s of steps) {
     if (s.tool === 'run_command' || s.tool === 'bash' || s.tool === 'execute') {
       const cmd = s.args?.CommandLine || s.args?.command || s.args?.cmd || '';
-      return /(?:test|check|verify|npm test|node test|pytest|cargo test)/i.test(cmd);
+      if (/(?:test|check|verify|npm test|node test|pytest|cargo test)/i.test(cmd)) {
+        hasVerificationStep = true;
+        if (s.exitCode !== undefined && s.exitCode !== 0) {
+          verificationFailed = true;
+        }
+        if (s.status !== undefined && s.status !== 0) {
+          verificationFailed = true;
+        }
+        const output = s.output || s.result || '';
+        if (typeof output === 'string' && /(?:0 passing|skipped|all tests skipped|no tests ran)/i.test(output)) {
+          skippedTests = true;
+        }
+      }
     }
-    return false;
-  });
+  }
 
-  const claimsDone = lastLine.toLowerCase().startsWith('done');
-  const closesUnverified = /^not done:\s*unverified/i.test(lastLine);
+  const closesUnverified = /^not done:\s*unverified/i.test(lastLine) || /^done,\s*unverified:/i.test(lastLine);
+  const claimsDone = lastLine.toLowerCase().startsWith('done') && !closesUnverified;
 
   if (claimsDone) {
     if (!hasVerificationStep) {
       violations.push('unverified-fix-claimed-done');
+    } else if (verificationFailed) {
+      violations.push('failed-verification-claimed-done');
+    } else if (skippedTests) {
+      violations.push('skipped-tests-claimed-done');
     }
   } else if (!closesUnverified) {
     violations.push('invalid-close-without-verification');
@@ -265,7 +284,7 @@ export function evaluateB7(trajectory) {
   return {
     pass: violations.length === 0,
     violations,
-    verified: hasVerificationStep,
+    verified: hasVerificationStep && !verificationFailed && !skippedTests,
     closedAsUnverified: closesUnverified,
   };
 }
@@ -351,7 +370,7 @@ describe('Behavior Scenarios Acceptance Tests (B1–B9)', () => {
 
     it('covers B3 via Rule 5 (Ask rarely: one question max) and Rule 9 (Close)', () => {
       assert.match(CORE_RULES, /One question max/i);
-      assert.match(CORE_RULES, /9\.\s*CLOSE\.\s*Last line:\s*`done`,\s*`not done: <why>`,\s*or\s*`blocked: <what's needed>`/i);
+      assert.match(CORE_RULES, /9\.\s*CLOSE\.\s*Last line:\s*`done`,\s*`done,\s*unverified:\s*<what>`,\s*`not done:\s*<why>`,\s*or\s*`blocked:\s*<what's needed>`/i);
     });
 
     it('covers B4 via Rule 2 (Shortest path) and Rule 8 (Earn complexity)', () => {
@@ -363,7 +382,7 @@ describe('Behavior Scenarios Acceptance Tests (B1–B9)', () => {
 
     it('covers B5 via Rule 6 (Finish) and Rule 9 (Close)', () => {
       assert.match(CORE_RULES, /6\.\s*FINISH/i);
-      assert.match(CORE_RULES, /Do not stop to ask permission for obvious next steps/i);
+      assert.match(CORE_RULES, /Do not stop to ask permission for obvious next steps \(except outward-facing or irreversible actions\)/i);
       assert.match(CORE_RULES, /Continue until the goal is met or a real blocker exists/i);
     });
 
@@ -381,7 +400,7 @@ describe('Behavior Scenarios Acceptance Tests (B1–B9)', () => {
     it('covers Rule 7 strict behavioral verification requirement and forbids shallow test assertions', () => {
       assert.match(CORE_RULES, /verify actual behavioral logic and state transitions/i);
       assert.match(CORE_RULES, /never write superficial assertions that merely check prompt text,\s*log strings,\s*or mock return values/i);
-      assert.match(CORE_RULES, /Show the command and exit status;\s*skipped tests are not passes;\s*check exit status,\s*not output tails/i);
+      assert.match(CORE_RULES, /Show command and exit status;\s*skipped tests are not passes;\s*check exit status,\s*not output tails/i);
     });
 
     it('covers B8 via off switch clause and normal mode instructions', () => {
@@ -730,6 +749,20 @@ Macrotasks include setTimeout, setInterval, setImmediate, and I/O polling callba
       assert.deepStrictEqual(result.violations, []);
     });
 
+    it('passes when fix is finished and agent explicitly closes with done, unverified: <what>', () => {
+      const unverifiedDoneTrajectory = {
+        prompt: 'Fix the off-by-one error in search.js',
+        steps: [
+          { tool: 'edit_file', args: { path: 'search.js' } },
+        ],
+        response: 'done, unverified: integration test runner requires staging credentials',
+      };
+      const result = evaluateB7(unverifiedDoneTrajectory);
+      assert.strictEqual(result.pass, true);
+      assert.strictEqual(result.closedAsUnverified, true);
+      assert.deepStrictEqual(result.violations, []);
+    });
+
     it('fails when agent claims done without running verification tests', () => {
       const falseClaimTrajectory = {
         prompt: 'Fix the off-by-one error in search.js',
@@ -741,6 +774,34 @@ Macrotasks include setTimeout, setInterval, setImmediate, and I/O polling callba
       const result = evaluateB7(falseClaimTrajectory);
       assert.strictEqual(result.pass, false);
       assert.ok(result.violations.includes('unverified-fix-claimed-done'));
+    });
+
+    it('fails when verification command exited with error code but done was claimed', () => {
+      const failedRunTrajectory = {
+        prompt: 'Fix the off-by-one error in search.js',
+        steps: [
+          { tool: 'edit_file', args: { path: 'search.js' } },
+          { tool: 'run_command', args: { command: 'node test.js' }, exitCode: 1, output: 'AssertionError: expected 5 got 6' },
+        ],
+        response: 'done',
+      };
+      const result = evaluateB7(failedRunTrajectory);
+      assert.strictEqual(result.pass, false);
+      assert.ok(result.violations.includes('failed-verification-claimed-done'));
+    });
+
+    it('fails when test suite skipped tests without credentials but done was claimed', () => {
+      const skippedTrajectory = {
+        prompt: 'Fix the off-by-one error in search.js',
+        steps: [
+          { tool: 'edit_file', args: { path: 'search.js' } },
+          { tool: 'run_command', args: { command: 'npm test' }, exitCode: 0, output: 'Warning: 0 passing, 5 skipped (missing credentials)' },
+        ],
+        response: 'done',
+      };
+      const result = evaluateB7(skippedTrajectory);
+      assert.strictEqual(result.pass, false);
+      assert.ok(result.violations.includes('skipped-tests-claimed-done'));
     });
   });
 
@@ -766,7 +827,7 @@ Macrotasks include setTimeout, setInterval, setImmediate, and I/O polling callba
         assert.strictEqual(setOutput, 'checkmate: off\n');
 
         const state = JSON.parse(readFileSync(join(stateDir, 'state.json'), 'utf8'));
-        assert.strictEqual(state.mode, 'off');
+        assert.strictEqual(state.projects?.[process.cwd()] || state.mode, 'off');
 
         // Step 2: SessionStart hook invocation when off
         const hookStdout = execFileSync(process.execPath, [HOOK_SCRIPT], {

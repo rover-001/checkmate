@@ -2,7 +2,8 @@
 
 // checkmate — Gain Scoreboard & Real Session Telemetry
 // Reads benchmarks/results/summary.json and prints a compact plain-text scoreboard.
-// Also inspects ~/.claude/projects/*/*.jsonl for real session metrics.
+// Also inspects ~/.claude/projects/*/*.jsonl for real session metrics (deduplicated by message.id)
+// and compares checkmate sessions against baseline sessions.
 // Edits nothing, changes no mode. Never throws.
 
 import { readFileSync, readdirSync, existsSync } from "fs";
@@ -76,6 +77,147 @@ function formatArmLine(name, arm, baseArm, padName = 10) {
   return `  ${name.padEnd(padName)}: ${passStr}${passDelta} pass | ${tokStr}${tokDelta} med tokens | ${stepStr}${stepDelta} med steps`;
 }
 
+function analyzeTranscriptFile(filePath) {
+  let sessionOutputTokens = 0;
+  let sessionTurns = 0;
+  let sessionToolCalls = 0;
+  const turnOutputTokens = [];
+  const turnToolCalls = [];
+  const commandCounts = {};
+  const seenMessages = new Set();
+  let hasCheckmate = false;
+
+  try {
+    const content = readFileSync(filePath, "utf8");
+    if (content.includes("Goal-driven mode") || content.includes("# checkmate")) {
+      hasCheckmate = true;
+    }
+
+    const lines = content.split("\n");
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      let obj;
+      try {
+        obj = JSON.parse(line);
+      } catch {
+        continue;
+      }
+
+      if (obj.type === "assistant" && obj.message) {
+        const msgId = obj.message.id;
+        // Group by message.id to avoid duplicate counts from multi-record chunk writes
+        if (msgId && seenMessages.has(msgId)) {
+          continue;
+        }
+        if (msgId) {
+          seenMessages.add(msgId);
+        }
+
+        sessionTurns++;
+        const outTok = obj.message?.usage?.output_tokens || 0;
+        sessionOutputTokens += outTok;
+        turnOutputTokens.push(outTok);
+
+        let toolCallsInTurn = 0;
+        const contents = obj.message?.content || [];
+        if (Array.isArray(contents)) {
+          for (const item of contents) {
+            if (item.type === "tool_use") {
+              toolCallsInTurn++;
+              sessionToolCalls++;
+              if (item.name === "Bash" && item.input?.command) {
+                const firstWord = item.input.command.trim().split(/\s+/)[0];
+                if (firstWord) {
+                  commandCounts[firstWord] = (commandCounts[firstWord] || 0) + 1;
+                }
+              }
+            }
+          }
+        }
+        turnToolCalls.push(toolCallsInTurn);
+      }
+    }
+  } catch {
+    // ignore read error
+  }
+
+  return {
+    hasCheckmate,
+    sessionOutputTokens,
+    sessionTurns,
+    sessionToolCalls,
+    turnOutputTokens,
+    turnToolCalls,
+    commandCounts,
+  };
+}
+
+function computeGroupMetrics(sessions) {
+  if (sessions.length === 0) return null;
+
+  let totalTurns = 0;
+  let totalOutputTokens = 0;
+  let totalToolCalls = 0;
+  const allToolCallsPerTurn = [];
+  const allOutputTokensPerTurn = [];
+  const sessionTokenList = [];
+  const aggregatedCommands = {};
+
+  for (const s of sessions) {
+    totalTurns += s.sessionTurns;
+    totalOutputTokens += s.sessionOutputTokens;
+    totalToolCalls += s.sessionToolCalls;
+    allToolCallsPerTurn.push(...s.turnToolCalls);
+    allOutputTokensPerTurn.push(...s.turnOutputTokens);
+    if (s.sessionOutputTokens > 0) {
+      sessionTokenList.push(s.sessionOutputTokens);
+    }
+    for (const [cmd, cnt] of Object.entries(s.commandCounts)) {
+      aggregatedCommands[cmd] = (aggregatedCommands[cmd] || 0) + cnt;
+    }
+  }
+
+  if (totalTurns === 0) return null;
+
+  allToolCallsPerTurn.sort((a, b) => a - b);
+  allOutputTokensPerTurn.sort((a, b) => a - b);
+  sessionTokenList.sort((a, b) => b - a);
+
+  const median = (arr) => {
+    if (!arr.length) return 0;
+    const mid = Math.floor(arr.length / 2);
+    return arr.length % 2 !== 0 ? arr[mid] : (arr[mid - 1] + arr[mid]) / 2;
+  };
+
+  const avgToolCalls = (totalToolCalls / totalTurns).toFixed(2);
+  const medToolCalls = median(allToolCallsPerTurn);
+  const avgOutTok = Math.round(totalOutputTokens / totalTurns);
+  const medOutTok = Math.round(median(allOutputTokensPerTurn));
+
+  const top10Count = Math.max(1, Math.ceil(sessionTokenList.length * 0.1));
+  const top10Tokens = sessionTokenList.slice(0, top10Count).reduce((sum, n) => sum + n, 0);
+  const top10Percent = totalOutputTokens > 0 ? ((top10Tokens / totalOutputTokens) * 100).toFixed(1) : "0.0";
+
+  const topCommands = Object.entries(aggregatedCommands)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([cmd, cnt]) => `${cmd} (${cnt}x)`)
+    .join(", ");
+
+  return {
+    sessionCount: sessions.length,
+    totalTurns,
+    totalOutputTokens,
+    totalToolCalls,
+    avgToolCalls,
+    medToolCalls,
+    avgOutTok,
+    medOutTok,
+    top10Percent,
+    topCommands,
+  };
+}
+
 function analyzeRealSessions(customDir = null) {
   const projectsDir = customDir || process.env.CLAUDE_PROJECTS_DIR || join(homedir(), ".claude", "projects");
   if (!existsSync(projectsDir)) {
@@ -94,14 +236,8 @@ function analyzeRealSessions(customDir = null) {
     return null;
   }
 
-  let sessionCount = 0;
-  let totalTurns = 0;
-  let totalOutputTokens = 0;
-  let totalToolCalls = 0;
-  const toolCallsPerTurnList = [];
-  const outputTokensPerTurnList = [];
-  const sessionTokenList = [];
-  const commandCounts = {};
+  const checkmateSessions = [];
+  const baselineSessions = [];
 
   for (const dir of subdirs) {
     let files = [];
@@ -112,112 +248,72 @@ function analyzeRealSessions(customDir = null) {
     }
 
     for (const file of files) {
-      sessionCount++;
-      let sessionOutputTokens = 0;
-
-      try {
-        const content = readFileSync(join(dir, file), "utf8");
-        const lines = content.split("\n");
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          let obj;
-          try {
-            obj = JSON.parse(line);
-          } catch {
-            continue;
-          }
-
-          if (obj.type === "assistant" && obj.message) {
-            totalTurns++;
-            const outTok = obj.message?.usage?.output_tokens || 0;
-            totalOutputTokens += outTok;
-            sessionOutputTokens += outTok;
-            outputTokensPerTurnList.push(outTok);
-
-            let toolCallsInTurn = 0;
-            const contents = obj.message?.content || [];
-            if (Array.isArray(contents)) {
-              for (const item of contents) {
-                if (item.type === "tool_use") {
-                  toolCallsInTurn++;
-                  totalToolCalls++;
-                  if (item.name === "Bash" && item.input?.command) {
-                    const firstWord = item.input.command.trim().split(/\s+/)[0];
-                    if (firstWord) {
-                      commandCounts[firstWord] = (commandCounts[firstWord] || 0) + 1;
-                    }
-                  }
-                }
-              }
-            }
-            toolCallsPerTurnList.push(toolCallsInTurn);
-          }
+      const res = analyzeTranscriptFile(join(dir, file));
+      if (res.sessionTurns > 0) {
+        if (res.hasCheckmate) {
+          checkmateSessions.push(res);
+        } else {
+          baselineSessions.push(res);
         }
-      } catch {
-        // ignore read error
-      }
-
-      if (sessionOutputTokens > 0) {
-        sessionTokenList.push(sessionOutputTokens);
       }
     }
   }
 
-  if (sessionCount === 0 || totalTurns === 0) {
+  const checkmateStats = computeGroupMetrics(checkmateSessions);
+  const baselineStats = computeGroupMetrics(baselineSessions);
+
+  if (!checkmateStats && !baselineStats) {
     return null;
   }
 
-  toolCallsPerTurnList.sort((a, b) => a - b);
-  outputTokensPerTurnList.sort((a, b) => a - b);
-  sessionTokenList.sort((a, b) => b - a);
-
-  const median = (arr) => {
-    if (!arr.length) return 0;
-    const mid = Math.floor(arr.length / 2);
-    return arr.length % 2 !== 0 ? arr[mid] : (arr[mid - 1] + arr[mid]) / 2;
-  };
-
-  const avgToolCalls = (totalToolCalls / totalTurns).toFixed(2);
-  const medToolCalls = median(toolCallsPerTurnList);
-  const avgOutTok = Math.round(totalOutputTokens / totalTurns);
-  const medOutTok = Math.round(median(outputTokensPerTurnList));
-
-  const top10Count = Math.max(1, Math.ceil(sessionTokenList.length * 0.1));
-  const top10Tokens = sessionTokenList.slice(0, top10Count).reduce((sum, n) => sum + n, 0);
-  const top10Percent = totalOutputTokens > 0 ? ((top10Tokens / totalOutputTokens) * 100).toFixed(1) : "0.0";
-
-  const topCommands = Object.entries(commandCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([cmd, cnt]) => `${cmd} (${cnt}x)`)
-    .join(", ");
-
   return {
-    sessionCount,
-    totalTurns,
-    totalOutputTokens,
-    totalToolCalls,
-    avgToolCalls,
-    medToolCalls,
-    avgOutTok,
-    medOutTok,
-    top10Percent,
-    topCommands,
+    checkmate: checkmateStats,
+    baseline: baselineStats,
   };
 }
 
-function formatRealSessionsLines(stats) {
-  if (!stats) return [];
+function formatRealSessionsLines(telemetry) {
+  if (!telemetry) return [];
   const lines = [
     "=== real session telemetry (~/.claude/projects) ===",
-    `Sessions: ${stats.sessionCount} | Turns: ${stats.totalTurns} | Output tokens: ${stats.totalOutputTokens.toLocaleString()}`,
-    `Tool calls/turn : ${stats.avgToolCalls} avg | ${stats.medToolCalls} med`,
-    `Output tok/turn : ${stats.avgOutTok} avg | ${stats.medOutTok} med`,
-    `Concentration   : Top 10% longest sessions account for ${stats.top10Percent}% of total output tokens`,
   ];
-  if (stats.topCommands) {
-    lines.push(`Top commands    : ${stats.topCommands}`);
+
+  const { checkmate, baseline } = telemetry;
+
+  if (checkmate && baseline) {
+    const avgTokDelta = formatDelta(checkmate.avgOutTok, baseline.avgOutTok, false);
+    const medTokDelta = formatDelta(checkmate.medOutTok, baseline.medOutTok, false);
+    const avgToolDelta = formatDelta(Number(checkmate.avgToolCalls), Number(baseline.avgToolCalls), false);
+
+    lines.push(`Checkmate Sessions (${checkmate.sessionCount} sessions | ${checkmate.totalTurns} turns):`);
+    lines.push(`  Output tok/turn : ${checkmate.avgOutTok} avg${avgTokDelta} | ${checkmate.medOutTok} med${medTokDelta}`);
+    lines.push(`  Tool calls/turn : ${checkmate.avgToolCalls} avg${avgToolDelta} | ${checkmate.medToolCalls} med`);
+    lines.push(`  Total tokens    : ${checkmate.totalOutputTokens.toLocaleString()}`);
+    lines.push("");
+    lines.push(`Baseline Sessions (${baseline.sessionCount} sessions | ${baseline.totalTurns} turns):`);
+    lines.push(`  Output tok/turn : ${baseline.avgOutTok} avg | ${baseline.medOutTok} med`);
+    lines.push(`  Tool calls/turn : ${baseline.avgToolCalls} avg | ${baseline.medToolCalls} med`);
+    lines.push(`  Total tokens    : ${baseline.totalOutputTokens.toLocaleString()}`);
+    lines.push(`  Concentration   : Top 10% longest sessions account for ${baseline.top10Percent}% of total output tokens`);
+    if (baseline.topCommands) {
+      lines.push(`  Top commands    : ${baseline.topCommands}`);
+    }
+  } else if (baseline) {
+    lines.push(`Baseline Sessions (${baseline.sessionCount} sessions | ${baseline.totalTurns} turns):`);
+    lines.push(`  Output tok/turn : ${baseline.avgOutTok} avg | ${baseline.medOutTok} med`);
+    lines.push(`  Tool calls/turn : ${baseline.avgToolCalls} avg | ${baseline.medToolCalls} med`);
+    lines.push(`  Total tokens    : ${baseline.totalOutputTokens.toLocaleString()}`);
+    lines.push(`  Concentration   : Top 10% longest sessions account for ${baseline.top10Percent}% of total output tokens`);
+    if (baseline.topCommands) {
+      lines.push(`  Top commands    : ${baseline.topCommands}`);
+    }
+  } else if (checkmate) {
+    lines.push(`Checkmate Sessions (${checkmate.sessionCount} sessions | ${checkmate.totalTurns} turns):`);
+    lines.push(`  Output tok/turn : ${checkmate.avgOutTok} avg | ${checkmate.medOutTok} med`);
+    lines.push(`  Tool calls/turn : ${checkmate.avgToolCalls} avg | ${checkmate.medToolCalls} med`);
+    lines.push(`  Total tokens    : ${checkmate.totalOutputTokens.toLocaleString()}`);
   }
+
   return lines;
 }
 

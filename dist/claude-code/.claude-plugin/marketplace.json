@@ -10,7 +10,7 @@
     {
       "name": "checkmate",
       "description": "Goal-driven mode for AI coding agents. Reach the user's win condition in the fewest moves.",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "author": {
         "name": "Parth Sharma",
         "email": "sharmaparth.developer@gmail.com"
