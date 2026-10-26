@@ -1,0 +1,23 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "checkmate",
+  "description": "Goal-driven mode for AI coding agents. Reach the user's win condition in the fewest moves.",
+  "owner": {
+    "name": "Parth Sharma",
+    "email": "sharmaparth.developer@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "checkmate",
+      "description": "Goal-driven mode for AI coding agents. Reach the user's win condition in the fewest moves.",
+      "version": "1.2.0",
+      "author": {
+        "name": "Parth Sharma",
+        "email": "sharmaparth.developer@gmail.com"
+      },
+      "source": "./",
+      "category": "productivity",
+      "homepage": "https://github.com/rover-001/checkmate"
+    }
+  ]
+}

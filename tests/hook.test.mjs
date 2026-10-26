@@ -260,6 +260,44 @@ describe('checkmate hook instructions', () => {
       assert.equal(res.stdout, 'checkmate: off\n');
       assert.equal(res.state?.mode, 'off');
     });
+
+    it('isolates mode per project directory', () => {
+      const projectA = '/tmp/fake-project-a';
+      const projectB = '/tmp/fake-project-b';
+      const res = runHook({
+        args: ['--set', 'ultra', '--project', projectA],
+      });
+      assert.equal(res.exitCode, 0);
+      assert.equal(res.state?.projects?.[projectA], 'ultra');
+
+      // Hook run in project A resolves ultra
+      const resA = runHook({
+        state: res.state,
+        env: { CHECKMATE_PROJECT_DIR: projectA },
+      });
+      assert.ok(resA.stdout.includes(ULTRA_DELTA));
+
+      // Hook run in project B falls back to global mode (or config)
+      const resB = runHook({
+        state: { ...res.state, mode: 'lite' },
+        env: { CHECKMATE_PROJECT_DIR: projectB },
+      });
+      assert.ok(resB.stdout.includes(LITE_DELTA));
+      assert.ok(!resB.stdout.includes(ULTRA_DELTA));
+    });
+
+    it('isolates mode per session id', () => {
+      const sessionId = 'session-12345';
+      const res = runHook({
+        state: {
+          mode: 'lite',
+          sessions: { [sessionId]: 'ultra' },
+        },
+        env: { CHECKMATE_SESSION_ID: sessionId },
+      });
+      assert.equal(res.exitCode, 0);
+      assert.ok(res.stdout.includes(ULTRA_DELTA));
+    });
   });
 
   describe('Windows APPDATA configuration resolution', () => {

@@ -381,6 +381,7 @@ describe('Behavior Scenarios Acceptance Tests (B1–B9)', () => {
     it('covers Rule 7 strict behavioral verification requirement and forbids shallow test assertions', () => {
       assert.match(CORE_RULES, /verify actual behavioral logic and state transitions/i);
       assert.match(CORE_RULES, /never write superficial assertions that merely check prompt text,\s*log strings,\s*or mock return values/i);
+      assert.match(CORE_RULES, /Show the command and exit status;\s*skipped tests are not passes;\s*check exit status,\s*not output tails/i);
     });
 
     it('covers B8 via off switch clause and normal mode instructions', () => {
@@ -388,9 +389,10 @@ describe('Behavior Scenarios Acceptance Tests (B1–B9)', () => {
       assert.match(CORE_RULES, /if the user says ["']stop checkmate["'] or ["']normal mode["'],\s*stop applying these rules/i);
     });
 
-    it('covers B9 via safety and correctness override clause', () => {
+    it('covers B9 via safety and correctness override clause and exempts outward-facing actions', () => {
       assert.match(CORE_RULES, /Overrides:/i);
       assert.match(CORE_RULES, /safety,\s*correctness,.*always win over brevity/i);
+      assert.match(CORE_RULES, /Always confirm before an action that leaves the machine or is hard to undo: push, deploy, publish, send, delete, or changing public-facing text/i);
     });
   });
 

@@ -32,12 +32,21 @@ function parseArgs(args) {
     model: "claude-opus-5-5",
     concurrency: 1,
     out: null,
+    realistic: false,
+    settingSources: undefined,
   };
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     if (arg === "--arms" && args[i + 1]) {
       flags.arms = args[++i].split(",").map((s) => s.trim().toLowerCase());
+    } else if (arg === "--realistic") {
+      flags.realistic = true;
+      if (!args.includes("--arms")) {
+        flags.arms = ["baseline", "checkmate", "realistic-baseline", "realistic-checkmate"];
+      }
+    } else if (arg === "--setting-sources" && args[i + 1] !== undefined) {
+      flags.settingSources = args[++i];
     } else if (arg === "--runs" && args[i + 1]) {
       flags.runs = parseInt(args[++i], 10) || 3;
     } else if (arg === "--tasks" && args[i + 1]) {
@@ -67,7 +76,9 @@ function printHelp() {
 Usage: node benchmarks/run.mjs [options]
 
 Options:
-  --arms <list>         Comma-separated arms: baseline,checkmate,ultra (default: baseline,checkmate)
+  --arms <list>         Comma-separated arms: baseline,checkmate,ultra,realistic-baseline,realistic-checkmate (default: baseline,checkmate)
+  --realistic           Benchmark with representative project context (CLAUDE.md and concise guidelines)
+  --setting-sources <s> Setting sources passed to claude (default: "" for standard arms, "project" for realistic arms)
   --runs <N>            Number of runs per task (default: 3)
   --tasks <filter>      Filter tasks by id, bucket, or comma-separated list
   --model <model>       Model to evaluate (default: claude-opus-5-5)
@@ -79,8 +90,8 @@ Options:
 
 // Fetch rules payload from hook
 function getArmPayload(arm) {
-  if (arm === "baseline") return "";
-  const mode = arm === "ultra" ? "ultra" : "full";
+  if (arm === "baseline" || arm === "realistic-baseline" || arm === "realistic") return "";
+  const mode = arm.includes("ultra") ? "ultra" : arm.includes("lite") ? "lite" : "full";
   const res = spawnSync(
     "node",
     ["hooks/checkmate-instructions.js"],
@@ -159,7 +170,7 @@ function shuffle(array) {
 }
 
 // Execute a single Claude run
-async function executeRun({ task, arm, runNumber, payload, model }) {
+async function executeRun({ task, arm, runNumber, payload, model, flags }) {
   const startTime = Date.now();
   const tempDir = mkdtempSync(
     join(tmpdir(), `checkmate-bench-${task.id}-${arm}-${runNumber}-`)
@@ -174,6 +185,17 @@ async function executeRun({ task, arm, runNumber, payload, model }) {
   try {
     // 1. Copy fixture to temp directory
     cpSync(task.fixtureDir, tempDir, { recursive: true });
+
+    // Optional realistic context setup
+    const isRealistic = arm.startsWith("realistic") || Boolean(flags && flags.realistic);
+    if (isRealistic) {
+      const realisticClaudeMd = `# Project Guidelines
+- Keep responses concise and focused on the required code changes.
+- Ensure all unit tests pass before completing.
+- Avoid introducing unrequested abstractions, files, or extra dependencies.
+`;
+      writeFileSync(join(tempDir, "CLAUDE.md"), realisticClaudeMd, "utf8");
+    }
 
     // 2. Initialize git repository in fixture
     spawnSync("git", ["init"], { cwd: tempDir, stdio: "ignore" });
@@ -192,6 +214,10 @@ async function executeRun({ task, arm, runNumber, payload, model }) {
     });
 
     // 3. Prepare claude invocation
+    const settingSources = flags && flags.settingSources !== undefined
+      ? flags.settingSources
+      : (isRealistic ? "project" : "");
+
     const claudeArgs = [
       "-p",
       task.prompt,
@@ -202,7 +228,7 @@ async function executeRun({ task, arm, runNumber, payload, model }) {
       "--dangerously-skip-permissions",
       "--strict-mcp-config",
       "--setting-sources",
-      "",
+      settingSources,
     ];
 
     if (payload && payload.trim()) {
@@ -397,6 +423,7 @@ async function main() {
           runNumber: r,
           payload: payloads[arm],
           model: flags.model,
+          flags,
         });
       }
     }

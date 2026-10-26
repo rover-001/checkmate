@@ -3,7 +3,7 @@ name: checkmate-gain
 description: >-
   Displays the checkmate token and step efficiency scoreboard from benchmark results.
   Activates on "/checkmate-gain", "checkmate gain", "checkmate scoreboard", or "token savings".
-allowed-tools: ["Bash(node *)"]
+allowed-tools: ["Bash(node *gain.mjs*)"]
 ---
 
 # checkmate-gain

@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-10-26
+
+### Added
+- **Real Session Telemetry**: `checkmate-gain` now measures live session transcripts (`~/.claude/projects/*/*.jsonl`), reporting turns, tool calls/turn, output tokens/turn, command repetition frequencies, and token concentration in long sessions alongside benchmark numbers (or via `--sessions`).
+- **Claude Marketplace Manifest**: Added `.claude-plugin/marketplace.json` enabling direct installation via `/plugin install checkmate --marketplace rover-001/checkmate`.
+- **Realistic Context Benchmark Arm**: Added `--realistic` benchmark arm with representative `CLAUDE.md` and concise guidance (`realistic-baseline` vs `realistic-checkmate`) and `--setting-sources` configuration.
+- **Per-Project & Per-Session State Isolation**: Hook mode resolution and `/checkmate` CLI now isolate state per project directory and session ID in `state.json`, preventing machine-wide mode bleeding across parallel repos.
+
+### Changed
+- **Rule 6 & Overrides Outward-Facing Exemption**: Explicit confirmation required before irreversible or machine-leaving actions: push, deploy, publish, send, delete, or public-facing text edits.
+- **Rule 7 Evidence Verification**: Mandatory inspection of actual commands run and exit codes rather than superficial claims or pipelined output tails; skipped tests explicitly fail pass criteria.
+- **Command Security**: Quoted `$ARGUMENTS` and scoped `allowed-tools` to `Bash(node *checkmate-instructions.js*)` in `commands/checkmate.md`.
+- **Plugin Version**: Synchronized plugin manifest version to 1.2.0 across `package.json`, `plugin.json`, and `marketplace.json`.
+
 ## [1.1.0] - 2026-10-24
 
 ### Changed
