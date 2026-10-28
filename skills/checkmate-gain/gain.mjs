@@ -77,6 +77,15 @@ function formatArmLine(name, arm, baseArm, padName = 10) {
   return `  ${name.padEnd(padName)}: ${passStr}${passDelta} pass | ${tokStr}${tokDelta} med tokens | ${stepStr}${stepDelta} med steps`;
 }
 
+// Checkmate rules reach a session only through the SessionStart hook. Match that hook output,
+// not raw transcript text: diffs and file reads of rules/checkmate.md contain the same phrases.
+function isCheckmateInjection(obj) {
+  const att = obj.attachment;
+  if (obj.type !== "attachment" || !att || att.hookEvent !== "SessionStart") return false;
+  const text = [att.stdout, att.content].find(v => typeof v === "string") || "";
+  return text.includes("Goal-driven mode");
+}
+
 function analyzeTranscriptFile(filePath) {
   let sessionOutputTokens = 0;
   let sessionTurns = 0;
@@ -89,9 +98,6 @@ function analyzeTranscriptFile(filePath) {
 
   try {
     const content = readFileSync(filePath, "utf8");
-    if (content.includes("Goal-driven mode") || content.includes("# checkmate")) {
-      hasCheckmate = true;
-    }
 
     const lines = content.split("\n");
     for (const line of lines) {
@@ -101,6 +107,10 @@ function analyzeTranscriptFile(filePath) {
         obj = JSON.parse(line);
       } catch {
         continue;
+      }
+
+      if (isCheckmateInjection(obj)) {
+        hasCheckmate = true;
       }
 
       if (obj.type === "assistant" && obj.message) {
