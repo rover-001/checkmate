@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.2] - 2026-10-28
 
 ### Fixed
-- **Session Classifier**: `checkmate-gain` counts a transcript as a checkmate session only when a SessionStart hook attachment carries the injected rules. Diffs and file reads of `rules/checkmate.md` no longer misclassify sessions.
-- **Skipped-Test Detection**: Rule 7 check (B7) flags only a non-zero skipped count, `no tests ran`, `all tests skipped`, or a whole-token `0 passing`. Passing output such as `10 passed, 0 skipped` or `10 passing` is no longer flagged.
+- **Session Classifier**: `checkmate-gain` counts a transcript as a checkmate session only when a successful SessionStart hook attachment carries the injected checkmate rules, ignoring other plugins' SessionStart hooks. Diffs and file reads of `rules/checkmate.md` no longer misclassify sessions.
+- **Skipped-Test Test Coverage**: Added B7 behavioral coverage for `skipped 0`, `10 passing`, `10 passed, 3 skipped`, and `no tests ran`.
 
 ## [1.2.1] - 2026-10-26
 

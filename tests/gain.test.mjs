@@ -14,7 +14,7 @@ function assistantLine(id, text) {
 }
 
 describe('checkmate-gain session classifier', () => {
-  it('classifies only SessionStart-injected sessions as checkmate sessions', () => {
+  it('classifies only successful checkmate SessionStart injections as checkmate sessions', () => {
     const root = mkdtempSync(join(tmpdir(), 'checkmate-gain-test-'));
     const projects = join(root, 'projects');
 
@@ -23,6 +23,14 @@ describe('checkmate-gain session classifier', () => {
     writeFileSync(join(injected, 'session.jsonl'), [
       JSON.stringify({ type: 'attachment', attachment: { type: 'hook_success', hookEvent: 'SessionStart', stdout: '# checkmate\n\nGoal-driven mode. Reach the user\'s win condition.\n' } }),
       assistantLine('a1', 'working'),
+    ].join('\n') + '\n');
+
+    const otherHook = join(projects, 'proj-c');
+    mkdirSync(otherHook, { recursive: true });
+    writeFileSync(join(otherHook, 'session.jsonl'), [
+      JSON.stringify({ type: 'attachment', attachment: { type: 'hook_success', hookEvent: 'SessionStart', stdout: 'Other plugin: Goal-driven mode is one of our modes.' } }),
+      JSON.stringify({ type: 'attachment', attachment: { type: 'hook_error', hookEvent: 'SessionStart', stdout: '# checkmate\n\nGoal-driven mode.' } }),
+      assistantLine('c1', 'other'),
     ].join('\n') + '\n');
 
     const reviewed = join(projects, 'proj-b');
@@ -39,6 +47,6 @@ describe('checkmate-gain session classifier', () => {
     });
 
     assert.match(out, /Checkmate Sessions \(1 sessions/);
-    assert.match(out, /Baseline Sessions \(1 sessions/);
+    assert.match(out, /Baseline Sessions \(2 sessions/);
   });
 });
