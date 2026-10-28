@@ -79,11 +79,14 @@ function formatArmLine(name, arm, baseArm, padName = 10) {
 
 // Checkmate rules reach a session only through the SessionStart hook. Match that hook output,
 // not raw transcript text: diffs and file reads of rules/checkmate.md contain the same phrases.
+// Other SessionStart hooks may run alongside checkmate, so require the payload to open with the
+// checkmate rules heading, and the hook to have succeeded.
 function isCheckmateInjection(obj) {
   const att = obj.attachment;
-  if (obj.type !== "attachment" || !att || att.hookEvent !== "SessionStart") return false;
+  if (obj.type !== "attachment" || !att) return false;
+  if (att.type !== "hook_success" || att.hookEvent !== "SessionStart") return false;
   const text = [att.stdout, att.content].find(v => typeof v === "string") || "";
-  return text.includes("Goal-driven mode");
+  return text.trimStart().startsWith("# checkmate") && text.includes("Goal-driven mode");
 }
 
 function analyzeTranscriptFile(filePath) {
