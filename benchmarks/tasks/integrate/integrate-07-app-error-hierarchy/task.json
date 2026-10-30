@@ -1,0 +1,5 @@
+{
+  "id": "integrate-07-app-error-hierarchy",
+  "bucket": "integrate",
+  "prompt": "In src/handlers/userHandler.js, implement and export function findUserOrThrow(users, id). Find the user matching id. If found, return it. If not found, throw an AppError from ../errors/AppError.js with message 'User not found', statusCode 404, and code 'USER_NOT_FOUND'. Reuse the existing AppError class; do not create new Error subclasses or wrapper factories."
+}

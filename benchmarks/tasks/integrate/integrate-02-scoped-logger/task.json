@@ -1,0 +1,5 @@
+{
+  "id": "integrate-02-scoped-logger",
+  "bucket": "integrate",
+  "prompt": "In src/services/billing.js, implement and export function processInvoice(invoiceId, amount). Use the existing createScopedLogger from ../logger.js with scope 'billing'. Log info 'Processing invoice ' + invoiceId. If amount <= 0, log error 'Invalid amount' and return false; otherwise return true. Do not call console.log or declare logger classes."
+}

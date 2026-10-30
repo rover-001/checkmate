@@ -1,0 +1,595 @@
+{
+  "generatedAt": "2026-10-30T06:36:16.445Z",
+  "model": "claude-opus-5-5",
+  "runsPerTask": 3,
+  "arms": {
+    "baseline": {
+      "runs": 144,
+      "passed": 125,
+      "passRate": 0.8681,
+      "medianInputTokens": 4334,
+      "iqrInputTokens": [
+        2872.5,
+        5526.5
+      ],
+      "medianCacheReadTokens": 49586,
+      "iqrCacheReadTokens": [
+        39481,
+        51878.5
+      ],
+      "medianOutputTokens": 585,
+      "iqrOutputTokens": [
+        461,
+        691.5
+      ],
+      "medianTotalTokens": 57360,
+      "medianSteps": 4,
+      "medianWallMs": 6492
+    },
+    "checkmate": {
+      "runs": 144,
+      "passed": 140,
+      "passRate": 0.9722,
+      "medianInputTokens": 2313.5,
+      "iqrInputTokens": [
+        2031.5,
+        3249
+      ],
+      "medianCacheReadTokens": 38184,
+      "iqrCacheReadTokens": [
+        34504.5,
+        39849.5
+      ],
+      "medianOutputTokens": 271,
+      "iqrOutputTokens": [
+        219.5,
+        321
+      ],
+      "medianTotalTokens": 43549,
+      "medianSteps": 2,
+      "medianWallMs": 3646.5
+    },
+    "ultra": {
+      "runs": 144,
+      "passed": 137,
+      "passRate": 0.9514,
+      "medianInputTokens": 2384,
+      "iqrInputTokens": [
+        2127.5,
+        2807.5
+      ],
+      "medianCacheReadTokens": 34854,
+      "iqrCacheReadTokens": [
+        33198.5,
+        36512.5
+      ],
+      "medianOutputTokens": 201,
+      "iqrOutputTokens": [
+        170,
+        228
+      ],
+      "medianTotalTokens": 40244,
+      "medianSteps": 2,
+      "medianWallMs": 3012
+    }
+  },
+  "buckets": {
+    "feature": {
+      "baseline": {
+        "runs": 30,
+        "passed": 25,
+        "passRate": 0.8333,
+        "medianInputTokens": 5664,
+        "iqrInputTokens": [
+          4518,
+          7668
+        ],
+        "medianCacheReadTokens": 56565,
+        "iqrCacheReadTokens": [
+          55071.5,
+          57151
+        ],
+        "medianOutputTokens": 762,
+        "iqrOutputTokens": [
+          719.5,
+          799.5
+        ],
+        "medianTotalTokens": 65716,
+        "medianSteps": 5,
+        "medianWallMs": 9303
+      },
+      "checkmate": {
+        "runs": 30,
+        "passed": 30,
+        "passRate": 1,
+        "medianInputTokens": 2690.5,
+        "iqrInputTokens": [
+          2230,
+          3369
+        ],
+        "medianCacheReadTokens": 43388.5,
+        "iqrCacheReadTokens": [
+          42773,
+          43809
+        ],
+        "medianOutputTokens": 360,
+        "iqrOutputTokens": [
+          345,
+          380
+        ],
+        "medianTotalTokens": 49040,
+        "medianSteps": 2.5,
+        "medianWallMs": 4901.5
+      },
+      "ultra": {
+        "runs": 30,
+        "passed": 29,
+        "passRate": 0.9667,
+        "medianInputTokens": 2501,
+        "iqrInputTokens": [
+          2161,
+          2872.5
+        ],
+        "medianCacheReadTokens": 39846,
+        "iqrCacheReadTokens": [
+          39416.5,
+          40227
+        ],
+        "medianOutputTokens": 268,
+        "iqrOutputTokens": [
+          254,
+          282
+        ],
+        "medianTotalTokens": 45216,
+        "medianSteps": 2,
+        "medianWallMs": 4151
+      }
+    },
+    "bugfix": {
+      "baseline": {
+        "runs": 30,
+        "passed": 27,
+        "passRate": 0.9,
+        "medianInputTokens": 4618,
+        "iqrInputTokens": [
+          3614,
+          5342
+        ],
+        "medianCacheReadTokens": 41908,
+        "iqrCacheReadTokens": [
+          41400,
+          42606
+        ],
+        "medianOutputTokens": 514,
+        "iqrOutputTokens": [
+          480,
+          538
+        ],
+        "medianTotalTokens": 49710,
+        "medianSteps": 4,
+        "medianWallMs": 5974
+      },
+      "checkmate": {
+        "runs": 30,
+        "passed": 28,
+        "passRate": 0.9333,
+        "medianInputTokens": 2408,
+        "iqrInputTokens": [
+          2026.5,
+          3369
+        ],
+        "medianCacheReadTokens": 35662.5,
+        "iqrCacheReadTokens": [
+          34676.5,
+          36069.5
+        ],
+        "medianOutputTokens": 238,
+        "iqrOutputTokens": [
+          220.5,
+          258.5
+        ],
+        "medianTotalTokens": 40856,
+        "medianSteps": 2,
+        "medianWallMs": 3334.5
+      },
+      "ultra": {
+        "runs": 30,
+        "passed": 30,
+        "passRate": 1,
+        "medianInputTokens": 2463,
+        "iqrInputTokens": [
+          2083,
+          2839
+        ],
+        "medianCacheReadTokens": 33591.5,
+        "iqrCacheReadTokens": [
+          33104,
+          34076
+        ],
+        "medianOutputTokens": 181.5,
+        "iqrOutputTokens": [
+          169,
+          193
+        ],
+        "medianTotalTokens": 38815,
+        "medianSteps": 2,
+        "medianWallMs": 2755.5
+      }
+    },
+    "refactor": {
+      "baseline": {
+        "runs": 30,
+        "passed": 25,
+        "passRate": 0.8333,
+        "medianInputTokens": 5074,
+        "iqrInputTokens": [
+          3665,
+          5931.5
+        ],
+        "medianCacheReadTokens": 49780,
+        "iqrCacheReadTokens": [
+          49083,
+          50576.5
+        ],
+        "medianOutputTokens": 640,
+        "iqrOutputTokens": [
+          583.5,
+          655
+        ],
+        "medianTotalTokens": 58240,
+        "medianSteps": 4,
+        "medianWallMs": 7369
+      },
+      "checkmate": {
+        "runs": 30,
+        "passed": 30,
+        "passRate": 1,
+        "medianInputTokens": 2882.5,
+        "iqrInputTokens": [
+          2119,
+          3312
+        ],
+        "medianCacheReadTokens": 39093.5,
+        "iqrCacheReadTokens": [
+          38680,
+          39823
+        ],
+        "medianOutputTokens": 299,
+        "iqrOutputTokens": [
+          277,
+          314
+        ],
+        "medianTotalTokens": 44887,
+        "medianSteps": 3,
+        "medianWallMs": 3967
+      },
+      "ultra": {
+        "runs": 30,
+        "passed": 28,
+        "passRate": 0.9333,
+        "medianInputTokens": 2572,
+        "iqrInputTokens": [
+          2224.5,
+          2848.5
+        ],
+        "medianCacheReadTokens": 35937,
+        "iqrCacheReadTokens": [
+          35587,
+          36368
+        ],
+        "medianOutputTokens": 215,
+        "iqrOutputTokens": [
+          203.5,
+          223.5
+        ],
+        "medianTotalTokens": 41365,
+        "medianSteps": 2,
+        "medianWallMs": 3269
+      }
+    },
+    "qa": {
+      "baseline": {
+        "runs": 30,
+        "passed": 29,
+        "passRate": 0.9667,
+        "medianInputTokens": 2360,
+        "iqrInputTokens": [
+          2169.5,
+          2737.5
+        ],
+        "medianCacheReadTokens": 10066,
+        "iqrCacheReadTokens": [
+          9438,
+          10384
+        ],
+        "medianOutputTokens": 121,
+        "iqrOutputTokens": [
+          112,
+          138
+        ],
+        "medianTotalTokens": 15121,
+        "medianSteps": 1,
+        "medianWallMs": 1880
+      },
+      "checkmate": {
+        "runs": 30,
+        "passed": 30,
+        "passRate": 1,
+        "medianInputTokens": 1988.5,
+        "iqrInputTokens": [
+          1926,
+          2194
+        ],
+        "medianCacheReadTokens": 10796,
+        "iqrCacheReadTokens": [
+          10356,
+          10930
+        ],
+        "medianOutputTokens": 15,
+        "iqrOutputTokens": [
+          14,
+          18
+        ],
+        "medianTotalTokens": 15215,
+        "medianSteps": 1,
+        "medianWallMs": 1294.5
+      },
+      "ultra": {
+        "runs": 30,
+        "passed": 26,
+        "passRate": 0.8667,
+        "medianInputTokens": 2147,
+        "iqrInputTokens": [
+          2010,
+          2309
+        ],
+        "medianCacheReadTokens": 10557,
+        "iqrCacheReadTokens": [
+          10209,
+          10850
+        ],
+        "medianOutputTokens": 8,
+        "iqrOutputTokens": [
+          7,
+          9
+        ],
+        "medianTotalTokens": 15308,
+        "medianSteps": 1,
+        "medianWallMs": 1148.5
+      }
+    },
+    "integrate": {
+      "baseline": {
+        "runs": 24,
+        "passed": 19,
+        "passRate": 0.7917,
+        "medianInputTokens": 4550,
+        "iqrInputTokens": [
+          3610,
+          6306
+        ],
+        "medianCacheReadTokens": 51692,
+        "iqrCacheReadTokens": [
+          50363,
+          52173
+        ],
+        "medianOutputTokens": 660,
+        "iqrOutputTokens": [
+          619,
+          698
+        ],
+        "medianTotalTokens": 59560,
+        "medianSteps": 4,
+        "medianWallMs": 6403
+      },
+      "checkmate": {
+        "runs": 24,
+        "passed": 22,
+        "passRate": 0.9167,
+        "medianInputTokens": 2473.5,
+        "iqrInputTokens": [
+          2116,
+          3558
+        ],
+        "medianCacheReadTokens": 38199.5,
+        "iqrCacheReadTokens": [
+          37100,
+          38563
+        ],
+        "medianOutputTokens": 271.5,
+        "iqrOutputTokens": [
+          255,
+          294
+        ],
+        "medianTotalTokens": 43529.5,
+        "medianSteps": 2,
+        "medianWallMs": 3581
+      },
+      "ultra": {
+        "runs": 24,
+        "passed": 24,
+        "passRate": 1,
+        "medianInputTokens": 2556,
+        "iqrInputTokens": [
+          2205,
+          2998.5
+        ],
+        "medianCacheReadTokens": 34852,
+        "iqrCacheReadTokens": [
+          34302,
+          35293.5
+        ],
+        "medianOutputTokens": 204,
+        "iqrOutputTokens": [
+          193,
+          218.5
+        ],
+        "medianTotalTokens": 40244,
+        "medianSteps": 2,
+        "medianWallMs": 3005
+      }
+    }
+  },
+  "intersection": {
+    "taskCount": 22,
+    "sharedTaskCount": 22,
+    "taskIds": [
+      "bugfix-01-off-by-one",
+      "bugfix-03-async-unhandled",
+      "bugfix-06-json-parse-crash",
+      "bugfix-09-prototype-pollution",
+      "bugfix-10-event-leak",
+      "feature-01-slugify",
+      "feature-03-event-emitter",
+      "feature-08-rate-limiter",
+      "feature-09-query-string",
+      "integrate-03-validation-pipeline",
+      "integrate-05-cache-store-reuse",
+      "qa-01-http-status",
+      "qa-02-git-rebase-command",
+      "qa-03-node-event-loop",
+      "qa-05-sql-aggregate",
+      "qa-07-regex-matcher",
+      "qa-08-pkg-version",
+      "refactor-01-extract-helper",
+      "refactor-05-remove-dead-code",
+      "refactor-07-async-await",
+      "refactor-08-decompose-function",
+      "refactor-10-consolidate-duplicates"
+    ],
+    "sharedTaskIds": [
+      "bugfix-01-off-by-one",
+      "bugfix-03-async-unhandled",
+      "bugfix-06-json-parse-crash",
+      "bugfix-09-prototype-pollution",
+      "bugfix-10-event-leak",
+      "feature-01-slugify",
+      "feature-03-event-emitter",
+      "feature-08-rate-limiter",
+      "feature-09-query-string",
+      "integrate-03-validation-pipeline",
+      "integrate-05-cache-store-reuse",
+      "qa-01-http-status",
+      "qa-02-git-rebase-command",
+      "qa-03-node-event-loop",
+      "qa-05-sql-aggregate",
+      "qa-07-regex-matcher",
+      "qa-08-pkg-version",
+      "refactor-01-extract-helper",
+      "refactor-05-remove-dead-code",
+      "refactor-07-async-await",
+      "refactor-08-decompose-function",
+      "refactor-10-consolidate-duplicates"
+    ],
+    "arms": {
+      "baseline": {
+        "runs": 66,
+        "passed": 66,
+        "passRate": 1,
+        "medianInputTokens": 4005,
+        "iqrInputTokens": [
+          2653,
+          5342
+        ],
+        "medianCacheReadTokens": 45682,
+        "iqrCacheReadTokens": [
+          10836,
+          51293
+        ],
+        "medianOutputTokens": 574,
+        "iqrOutputTokens": [
+          146,
+          665
+        ],
+        "medianTotalTokens": 53790,
+        "medianSteps": 4,
+        "medianWallMs": 6374
+      },
+      "checkmate": {
+        "runs": 66,
+        "passed": 66,
+        "passRate": 1,
+        "medianInputTokens": 2252.5,
+        "iqrInputTokens": [
+          1991,
+          3068
+        ],
+        "medianCacheReadTokens": 36514.5,
+        "iqrCacheReadTokens": [
+          11147,
+          39668
+        ],
+        "medianOutputTokens": 262,
+        "iqrOutputTokens": [
+          21,
+          312
+        ],
+        "medianTotalTokens": 42225,
+        "medianSteps": 2,
+        "medianWallMs": 3575.5
+      },
+      "ultra": {
+        "runs": 66,
+        "passed": 66,
+        "passRate": 1,
+        "medianInputTokens": 2373,
+        "iqrInputTokens": [
+          2111,
+          2839
+        ],
+        "medianCacheReadTokens": 34283.5,
+        "iqrCacheReadTokens": [
+          11165,
+          36259
+        ],
+        "medianOutputTokens": 199,
+        "iqrOutputTokens": [
+          10,
+          228
+        ],
+        "medianTotalTokens": 39570.5,
+        "medianSteps": 2,
+        "medianWallMs": 2979
+      }
+    }
+  },
+  "failures": {
+    "checkmate": {
+      "runs": 144,
+      "failed": 4,
+      "categories": {
+        "skipped verification": 0,
+        "partial change": 0,
+        "wrong output": 4,
+        "timeout": 0,
+        "other": 0
+      },
+      "taskIds": [
+        "bugfix-05-date-timezone",
+        "bugfix-08-floating-point",
+        "integrate-01-auth-header",
+        "integrate-02-scoped-logger"
+      ]
+    },
+    "ultra": {
+      "runs": 144,
+      "failed": 7,
+      "categories": {
+        "skipped verification": 1,
+        "partial change": 0,
+        "wrong output": 6,
+        "timeout": 0,
+        "other": 0
+      },
+      "taskIds": [
+        "feature-07-deep-merge",
+        "qa-04-css-specificity",
+        "qa-06-dockerfile-instruction",
+        "qa-09-linux-signal",
+        "qa-10-complexity-class",
+        "refactor-04-simplify-boolean",
+        "refactor-09-magic-numbers"
+      ]
+    }
+  }
+}

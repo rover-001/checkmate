@@ -77,6 +77,28 @@ function formatArmLine(name, arm, baseArm, padName = 10) {
   return `  ${name.padEnd(padName)}: ${passStr}${passDelta} pass | ${tokStr}${tokDelta} med tokens | ${stepStr}${stepDelta} med steps`;
 }
 
+function formatSharedArmLine(name, arm, baseArm, padName = 10) {
+  const passStr = arm.passRate !== undefined ? formatPercent(arm.passRate) : "n/a";
+
+  const outTok = arm.medianOutputTokens !== null && arm.medianOutputTokens !== undefined ? formatStat(arm.medianOutputTokens) : "n/a";
+  const outDelta = baseArm && name !== "baseline" ? formatDelta(arm.medianOutputTokens, baseArm.medianOutputTokens, false) : "";
+
+  const totTok = arm.medianTotalTokens !== null && arm.medianTotalTokens !== undefined ? Number(arm.medianTotalTokens).toLocaleString() : "n/a";
+  const totDelta = baseArm && name !== "baseline" ? formatDelta(arm.medianTotalTokens, baseArm.medianTotalTokens, false) : "";
+
+  const steps = arm.medianSteps !== null && arm.medianSteps !== undefined ? formatStat(arm.medianSteps) : "n/a";
+  const stepDelta = baseArm && name !== "baseline" ? formatDelta(arm.medianSteps, baseArm.medianSteps, false) : "";
+
+  const wall = arm.medianWallMs !== null && arm.medianWallMs !== undefined
+    ? `${(arm.medianWallMs / 1000).toFixed(2)}s`
+    : "n/a";
+  const wallDelta = baseArm && name !== "baseline" && baseArm.medianWallMs
+    ? formatDelta(arm.medianWallMs, baseArm.medianWallMs, false)
+    : "";
+
+  return `  ${name.padEnd(padName)}: ${passStr} pass | ${outTok}${outDelta} out tok | ${totTok}${totDelta} total tok | ${steps}${stepDelta} steps | ${wall}${wallDelta} wall`;
+}
+
 // Checkmate rules reach a session only through the SessionStart hook. Match that hook output,
 // not raw transcript text: diffs and file reads of rules/checkmate.md contain the same phrases.
 // Other SessionStart hooks may run alongside checkmate, so require the payload to open with the
@@ -371,9 +393,20 @@ function printScoreboard() {
     const armNames = Object.keys(arms);
     const baseArm = arms["baseline"];
 
-    lines.push("Overall:");
+    lines.push("Overall (Per-Arm Passed Runs):");
     for (const armName of armNames) {
       lines.push(formatArmLine(armName, arms[armName], baseArm));
+    }
+
+    const intersection = benchmarkData.intersection;
+    if (intersection && intersection.arms && Object.keys(intersection.arms).length > 0) {
+      const taskCount = intersection.taskCount ?? intersection.sharedTaskCount ?? 0;
+      lines.push("");
+      lines.push(`Shared-Set (${taskCount} identical tasks where ALL arms passed in all runs):`);
+      const interBase = intersection.arms["baseline"];
+      for (const [armName, armData] of Object.entries(intersection.arms)) {
+        lines.push(formatSharedArmLine(armName, armData, interBase));
+      }
     }
 
     const buckets = benchmarkData.buckets;
@@ -386,6 +419,21 @@ function printScoreboard() {
         for (const [armName, armData] of Object.entries(bucketArms)) {
           lines.push(`  ${formatArmLine(armName, armData, bucketBase, 12)}`);
         }
+      }
+    }
+
+    const failures = benchmarkData.failures;
+    if (failures && typeof failures === "object" && Object.keys(failures).length > 0) {
+      lines.push("");
+      lines.push("Failure Breakdown (classified root causes):");
+      for (const [armName, failData] of Object.entries(failures)) {
+        const catStr = Object.entries(failData.categories || {})
+          .map(([k, v]) => `${k}: ${v}`)
+          .join(", ");
+        const tasksStr = failData.taskIds && failData.taskIds.length > 0
+          ? ` (tasks: ${failData.taskIds.join(", ")})`
+          : "";
+        lines.push(`  ${armName.padEnd(10)}: ${failData.failed}/${failData.runs} failed [${catStr}]${tasksStr}`);
       }
     }
     lines.push("");

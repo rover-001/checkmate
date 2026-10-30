@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-10-30
+
+### Added
+- **5th Benchmark Category (`integrate`)**: Added 8 multi-file codebase integration tasks (`integrate-01` through `integrate-08`) testing that agents reuse existing helpers and design patterns rather than introducing unneeded layers or duplicating code. Hidden tests assert functional correctness and strictly fail if logic is duplicated or unnecessary wrapper classes are declared.
+- **Multi-Model Benchmark Coverage**: Expanded benchmark suite to 48 tasks (144 runs/arm, 432 runs/model). Ran full evaluations across both Sonnet-class (`claude-sonnet-5-5`) and Opus-class (`claude-opus-5-5`) models across all 3 arms (`baseline`, `checkmate`, `ultra`). Saved per-model results into dedicated separate files (`summary-claude-sonnet-5-5.json`, `summary-claude-opus-5-5.json`, and raw jsonl logs).
+- **Environment Variable Model Configuration**: `benchmarks/run.mjs` and `benchmarks/generate-eval.mjs` now support `MODEL`, `ANTHROPIC_MODEL`, and `CHECKMATE_BENCHMARK_MODEL` environment variables in addition to the `--model` flag.
+- **Failure Breakdown Classification**: Implemented `classifyFailure` and `computeFailureBreakdown` in `benchmarks/stats.mjs`, categorizing every failed run in `checkmate` and `ultra` arms into five root causes (`skipped verification`, `partial change`, `wrong output`, `timeout`, `other`) based on actual run logs and test outputs. Emits per-arm breakdown tables and lists failing task IDs in `README.md`, `summary.json`, and `checkmate-gain`.
+- **Dual-View Reporting in `/checkmate-gain`**: Added the Shared-Set view to `skills/checkmate-gain/gain.mjs`, showing both the standard Overall view (per-arm passed runs) and the identical Shared-Set view (tasks where all arms passed in all runs) with output tokens, total tokens, steps, and wall time.
+
+### Already Present / Preserved
+- **CLI Model Flag**: `--model <model>` argument was already present in `benchmarks/run.mjs`.
+- **Paired Intersection Algorithm**: Strict task intersection logic was already implemented in `benchmarks/stats.mjs` (`computeIntersectionStats`).
+- **Markdown Summary Harness**: Automated report insertion markers (`<!-- results:start -->` / `<!-- results:end -->`) and script (`scripts/report.mjs`) were already present.
+- **Rule Constraints**: Injected rules (`rules/checkmate.md`) preserved under the 2 KB budget (1,814 bytes) with zero changes to canonical wording.
+
 ## [2.0.0] - 2026-10-30
 
 ### Added

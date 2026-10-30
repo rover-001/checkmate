@@ -1,0 +1,5 @@
+{
+  "id": "integrate-04-shared-event-bus",
+  "bucket": "integrate",
+  "prompt": "In src/analytics/tracker.js, export trackerStats = { count: 0, lastEvent: null } and function attachTracker(). When attachTracker() is called, subscribe to the 'track' event on the shared bus from ../events/bus.js. On each 'track' event, increment trackerStats.count and set trackerStats.lastEvent to the payload. Reuse the existing shared bus instance; do not create a new event emitter or listener classes."
+}

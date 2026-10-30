@@ -1,6 +1,6 @@
 // benchmarks/setup-tasks.mjs — Generator for all 40 benchmark tasks
 import { mkdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 
 const TASKS = [
   // ==========================================
@@ -1605,6 +1605,483 @@ abc.def.ghi.jkl
       pattern: "O\\\\(\\\\s*log\\\\s*n\\\\s*\\\\)",
       expected: "O(log n)"
     }
+  },
+
+  // ==========================================
+  // INTEGRATE TASKS (8)
+  // Multi-file tasks inside existing codebase
+  // Reusing existing helpers/patterns without extra layers
+  // ==========================================
+  {
+    id: "integrate-01-auth-header",
+    bucket: "integrate",
+    prompt: "In src/api/orders.js, implement and export async function fetchOrder(orderId, token). It should make a request using the existing request(url, options) and buildAuthHeader(token) from ../http/client.js, passing the Authorization header. Return the request result. Reuse the existing helper; do not duplicate header formatting or add wrapper classes.",
+    fixture: {
+      "package.json": '{\n  "name": "app",\n  "type": "module"\n}\n',
+      "src/http/client.js": `export function buildAuthHeader(token, type = "Bearer") {
+  if (!token) throw new Error("Token required");
+  return \`\${type} \${token}\`;
+}
+export async function request(url, options = {}) {
+  return { status: 200, url, headers: options.headers || {} };
+}
+`,
+      "src/api/orders.js": `// Implement fetchOrder here\n`
+    },
+    check: `const ordersMod = await import(pathToFileURL(resolve(workdir, "src/api/orders.js")).href);
+assert.equal(typeof ordersMod.fetchOrder, "function", "fetchOrder must be exported");
+
+const res = await ordersMod.fetchOrder("ord-99", "tok-xyz");
+assert.equal(res.status, 200);
+assert.equal(res.url, "/orders/ord-99");
+assert.equal(res.headers.Authorization, "Bearer tok-xyz");
+
+const fs = await import("node:fs");
+const code = fs.readFileSync(resolve(workdir, "src/api/orders.js"), "utf8");
+assert.match(code, /buildAuthHeader/, "Must reuse buildAuthHeader from client.js");
+assert.doesNotMatch(code, /\`Bearer\\s|\\bBearer\\s*['"]/i, "Must not duplicate Bearer string formatting");
+assert.doesNotMatch(code, /\\bclass\\s+[A-Z]/, "Must not introduce unnecessary classes or wrappers");
+console.log("PASS");
+`,
+    reference: {
+      "package.json": '{\n  "name": "app",\n  "type": "module"\n}\n',
+      "src/http/client.js": `export function buildAuthHeader(token, type = "Bearer") {
+  if (!token) throw new Error("Token required");
+  return \`\${type} \${token}\`;
+}
+export async function request(url, options = {}) {
+  return { status: 200, url, headers: options.headers || {} };
+}
+`,
+      "src/api/orders.js": `import { request, buildAuthHeader } from "../http/client.js";
+
+export async function fetchOrder(orderId, token) {
+  return request(\`/orders/\${orderId}\`, {
+    headers: {
+      Authorization: buildAuthHeader(token)
+    }
+  });
+}
+`
+    }
+  },
+  {
+    id: "integrate-02-scoped-logger",
+    bucket: "integrate",
+    prompt: "In src/services/billing.js, implement and export function processInvoice(invoiceId, amount). Use the existing createScopedLogger from ../logger.js with scope 'billing'. Log info 'Processing invoice ' + invoiceId. If amount <= 0, log error 'Invalid amount' and return false; otherwise return true. Do not call console.log or declare logger classes.",
+    fixture: {
+      "package.json": '{\n  "name": "app",\n  "type": "module"\n}\n',
+      "src/logger.js": `export const logStore = [];
+export function createScopedLogger(scope) {
+  return {
+    info(msg) { logStore.push(\`[\${scope}] [INFO] \${msg}\`); },
+    error(msg) { logStore.push(\`[\${scope}] [ERROR] \${msg}\`); }
+  };
+}
+`,
+      "src/services/billing.js": `// Implement processInvoice here\n`
+    },
+    check: `const { logStore } = await import(pathToFileURL(resolve(workdir, "src/logger.js")).href);
+const billingMod = await import(pathToFileURL(resolve(workdir, "src/services/billing.js")).href);
+assert.equal(typeof billingMod.processInvoice, "function", "processInvoice must be exported");
+
+logStore.length = 0;
+assert.equal(billingMod.processInvoice("inv-101", 50), true);
+assert.ok(logStore.includes("[billing] [INFO] Processing invoice inv-101"));
+
+assert.equal(billingMod.processInvoice("inv-102", -10), false);
+assert.ok(logStore.includes("[billing] [ERROR] Invalid amount"));
+
+const fs = await import("node:fs");
+const code = fs.readFileSync(resolve(workdir, "src/services/billing.js"), "utf8");
+assert.match(code, /createScopedLogger/, "Must reuse createScopedLogger from logger.js");
+assert.doesNotMatch(code, /console\\.(log|error|warn)/, "Must not call console.log directly");
+assert.doesNotMatch(code, /\\bclass\\s+[A-Z]/, "Must not introduce logger classes or wrapper layers");
+console.log("PASS");
+`,
+    reference: {
+      "package.json": '{\n  "name": "app",\n  "type": "module"\n}\n',
+      "src/logger.js": `export const logStore = [];
+export function createScopedLogger(scope) {
+  return {
+    info(msg) { logStore.push(\`[\${scope}] [INFO] \${msg}\`); },
+    error(msg) { logStore.push(\`[\${scope}] [ERROR] \${msg}\`); }
+  };
+}
+`,
+      "src/services/billing.js": `import { createScopedLogger } from "../logger.js";
+
+const logger = createScopedLogger("billing");
+
+export function processInvoice(invoiceId, amount) {
+  logger.info("Processing invoice " + invoiceId);
+  if (amount <= 0) {
+    logger.error("Invalid amount");
+    return false;
+  }
+  return true;
+}
+`
+    }
+  },
+  {
+    id: "integrate-03-validation-pipeline",
+    bucket: "integrate",
+    prompt: "In src/routes/signup.js, implement and export function validateSignup(data). Validate data using existing functions from ../validators/common.js: isEmail for data.email, hasMinLength for data.password with min 8, and isPositiveInt for data.age. Return an array of error strings: 'invalid_email', 'short_password', 'invalid_age'. Return empty array if all valid. Do not write custom regexes or validation classes.",
+    fixture: {
+      "package.json": '{\n  "name": "app",\n  "type": "module"\n}\n',
+      "src/validators/common.js": `export function isEmail(val) {
+  return typeof val === "string" && /^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(val);
+}
+export function hasMinLength(val, min) {
+  return typeof val === "string" && val.length >= min;
+}
+export function isPositiveInt(val) {
+  return Number.isInteger(val) && val > 0;
+}
+`,
+      "src/routes/signup.js": `// Implement validateSignup here\n`
+    },
+    check: `const signupMod = await import(pathToFileURL(resolve(workdir, "src/routes/signup.js")).href);
+assert.equal(typeof signupMod.validateSignup, "function");
+
+assert.deepEqual(signupMod.validateSignup({ email: "user@test.com", password: "password123", age: 25 }), []);
+assert.deepEqual(signupMod.validateSignup({ email: "bademail", password: "pwd", age: -1 }), ["invalid_email", "short_password", "invalid_age"]);
+
+const fs = await import("node:fs");
+const code = fs.readFileSync(resolve(workdir, "src/routes/signup.js"), "utf8");
+assert.match(code, /isEmail\\s*\\(|isEmail\\b/, "Must reuse isEmail");
+assert.match(code, /hasMinLength\\s*\\(|hasMinLength\\b/, "Must reuse hasMinLength");
+assert.match(code, /isPositiveInt\\s*\\(|isPositiveInt\\b/, "Must reuse isPositiveInt");
+assert.doesNotMatch(code, /\\/[^/\\n\\\\]+@[^/\\n\\\\]+\\//, "Must not duplicate email regex pattern");
+assert.doesNotMatch(code, /\\bclass\\s+[A-Z]/, "Must not introduce validator classes or schema engines");
+console.log("PASS");
+`,
+    reference: {
+      "package.json": '{\n  "name": "app",\n  "type": "module"\n}\n',
+      "src/validators/common.js": `export function isEmail(val) {
+  return typeof val === "string" && /^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(val);
+}
+export function hasMinLength(val, min) {
+  return typeof val === "string" && val.length >= min;
+}
+export function isPositiveInt(val) {
+  return Number.isInteger(val) && val > 0;
+}
+`,
+      "src/routes/signup.js": `import { isEmail, hasMinLength, isPositiveInt } from "../validators/common.js";
+
+export function validateSignup(data) {
+  const errors = [];
+  if (!data || !isEmail(data.email)) errors.push("invalid_email");
+  if (!data || !hasMinLength(data.password, 8)) errors.push("short_password");
+  if (!data || !isPositiveInt(data.age)) errors.push("invalid_age");
+  return errors;
+}
+`
+    }
+  },
+  {
+    id: "integrate-04-shared-event-bus",
+    bucket: "integrate",
+    prompt: "In src/analytics/tracker.js, export trackerStats = { count: 0, lastEvent: null } and function attachTracker(). When attachTracker() is called, subscribe to the 'track' event on the shared bus from ../events/bus.js. On each 'track' event, increment trackerStats.count and set trackerStats.lastEvent to the payload. Reuse the existing shared bus instance; do not create a new event emitter or listener classes.",
+    fixture: {
+      "package.json": '{\n  "name": "app",\n  "type": "module"\n}\n',
+      "src/events/bus.js": `class EventBus {
+  constructor() { this.handlers = new Map(); }
+  on(evt, fn) {
+    if (!this.handlers.has(evt)) this.handlers.set(evt, []);
+    this.handlers.get(evt).push(fn);
+  }
+  emit(evt, payload) {
+    for (const fn of this.handlers.get(evt) || []) fn(payload);
+  }
+}
+export const bus = new EventBus();
+`,
+      "src/analytics/tracker.js": `// Implement attachTracker and trackerStats here\n`
+    },
+    check: `const { bus } = await import(pathToFileURL(resolve(workdir, "src/events/bus.js")).href);
+const trackerMod = await import(pathToFileURL(resolve(workdir, "src/analytics/tracker.js")).href);
+assert.equal(typeof trackerMod.attachTracker, "function");
+assert.ok(trackerMod.trackerStats);
+
+trackerMod.attachTracker();
+bus.emit("track", { page: "/home" });
+assert.equal(trackerMod.trackerStats.count, 1);
+assert.deepEqual(trackerMod.trackerStats.lastEvent, { page: "/home" });
+
+const fs = await import("node:fs");
+const code = fs.readFileSync(resolve(workdir, "src/analytics/tracker.js"), "utf8");
+assert.match(code, /\\bbus\\b/, "Must reuse bus from bus.js");
+assert.doesNotMatch(code, /\\bnew\\s+Event(Emitter|Bus)\\b/, "Must not instantiate duplicate event buses");
+assert.doesNotMatch(code, /\\bclass\\s+[A-Z]/, "Must not introduce abstraction classes");
+console.log("PASS");
+`,
+    reference: {
+      "package.json": '{\n  "name": "app",\n  "type": "module"\n}\n',
+      "src/events/bus.js": `class EventBus {
+  constructor() { this.handlers = new Map(); }
+  on(evt, fn) {
+    if (!this.handlers.has(evt)) this.handlers.set(evt, []);
+    this.handlers.get(evt).push(fn);
+  }
+  emit(evt, payload) {
+    for (const fn of this.handlers.get(evt) || []) fn(payload);
+  }
+}
+export const bus = new EventBus();
+`,
+      "src/analytics/tracker.js": `import { bus } from "../events/bus.js";
+
+export const trackerStats = { count: 0, lastEvent: null };
+
+export function attachTracker() {
+  bus.on("track", (payload) => {
+    trackerStats.count++;
+    trackerStats.lastEvent = payload;
+  });
+}
+`
+    }
+  },
+  {
+    id: "integrate-05-cache-store-reuse",
+    bucket: "integrate",
+    prompt: "In src/services/catalog.js, implement and export async function getCatalogItem(id, loaderFn). Cache the result for 30000ms using the existing getOrSet(key, ttlMs, fetcher) helper from ../cache/store.js with key 'item:' + id. Reuse the existing getOrSet helper; do not create duplicate cache maps or caching layers.",
+    fixture: {
+      "package.json": '{\n  "name": "app",\n  "type": "module"\n}\n',
+      "src/cache/store.js": `export const cacheStore = new Map();
+export async function getOrSet(key, ttlMs, fetcher) {
+  const now = Date.now();
+  const entry = cacheStore.get(key);
+  if (entry && entry.expiresAt > now) return entry.val;
+  const val = await fetcher();
+  cacheStore.set(key, { val, expiresAt: now + ttlMs });
+  return val;
+}
+`,
+      "src/services/catalog.js": `// Implement getCatalogItem here\n`
+    },
+    check: `const { cacheStore } = await import(pathToFileURL(resolve(workdir, "src/cache/store.js")).href);
+const catalogMod = await import(pathToFileURL(resolve(workdir, "src/services/catalog.js")).href);
+assert.equal(typeof catalogMod.getCatalogItem, "function");
+
+cacheStore.clear();
+let calls = 0;
+const loader = async () => { calls++; return { id: "p1", name: "Widget" }; };
+
+const r1 = await catalogMod.getCatalogItem("p1", loader);
+const r2 = await catalogMod.getCatalogItem("p1", loader);
+assert.equal(calls, 1, "Loader must only be called once when cached");
+assert.equal(r1.name, "Widget");
+assert.equal(r2.name, "Widget");
+assert.ok(cacheStore.has("item:p1"));
+
+const fs = await import("node:fs");
+const code = fs.readFileSync(resolve(workdir, "src/services/catalog.js"), "utf8");
+assert.match(code, /getOrSet/, "Must reuse getOrSet from store.js");
+assert.doesNotMatch(code, /\\bnew\\s+Map\\b/, "Must not declare a new Map cache");
+assert.doesNotMatch(code, /\\bclass\\s+[A-Z]/, "Must not introduce caching service classes");
+console.log("PASS");
+`,
+    reference: {
+      "package.json": '{\n  "name": "app",\n  "type": "module"\n}\n',
+      "src/cache/store.js": `export const cacheStore = new Map();
+export async function getOrSet(key, ttlMs, fetcher) {
+  const now = Date.now();
+  const entry = cacheStore.get(key);
+  if (entry && entry.expiresAt > now) return entry.val;
+  const val = await fetcher();
+  cacheStore.set(key, { val, expiresAt: now + ttlMs });
+  return val;
+}
+`,
+      "src/services/catalog.js": `import { getOrSet } from "../cache/store.js";
+
+export async function getCatalogItem(id, loaderFn) {
+  return getOrSet("item:" + id, 30000, loaderFn);
+}
+`
+    }
+  },
+  {
+    id: "integrate-06-currency-formatting",
+    bucket: "integrate",
+    prompt: "In src/views/receipt.js, implement and export function generateReceipt(items). items is an array of { name: string, cents: number }. Return a multi-line string where each item is formatted as '${item.name}: ${formattedPrice}' and the final line is 'Total: ${formattedTotal}'. Use formatCents from ../utils/money.js to format all prices. Do not re-implement currency formatting or toFixed division.",
+    fixture: {
+      "package.json": '{\n  "name": "app",\n  "type": "module"\n}\n',
+      "src/utils/money.js": `export function formatCents(cents, currency = "USD") {
+  const dollars = (cents / 100).toFixed(2);
+  const sym = currency === "USD" ? "$" : currency === "EUR" ? "€" : "";
+  return \`\${sym}\${dollars}\`;
+}
+`,
+      "src/views/receipt.js": `// Implement generateReceipt here\n`
+    },
+    check: `const receiptMod = await import(pathToFileURL(resolve(workdir, "src/views/receipt.js")).href);
+assert.equal(typeof receiptMod.generateReceipt, "function");
+
+const items = [{ name: "Keyboard", cents: 4500 }, { name: "Mouse", cents: 2550 }];
+const output = receiptMod.generateReceipt(items);
+assert.equal(output, "Keyboard: $45.00\\nMouse: $25.50\\nTotal: $70.50");
+
+const fs = await import("node:fs");
+const code = fs.readFileSync(resolve(workdir, "src/views/receipt.js"), "utf8");
+assert.match(code, /formatCents/, "Must reuse formatCents from money.js");
+assert.doesNotMatch(code, /\\.toFixed\\(2\\)/, "Must not duplicate toFixed currency logic");
+assert.doesNotMatch(code, /\\bclass\\s+[A-Z]/, "Must not introduce receipt builder classes");
+console.log("PASS");
+`,
+    reference: {
+      "package.json": '{\n  "name": "app",\n  "type": "module"\n}\n',
+      "src/utils/money.js": `export function formatCents(cents, currency = "USD") {
+  const dollars = (cents / 100).toFixed(2);
+  const sym = currency === "USD" ? "$" : currency === "EUR" ? "€" : "";
+  return \`\${sym}\${dollars}\`;
+}
+`,
+      "src/views/receipt.js": `import { formatCents } from "../utils/money.js";
+
+export function generateReceipt(items) {
+  const lines = [];
+  let total = 0;
+  for (const item of items) {
+    total += item.cents;
+    lines.push(\`\${item.name}: \${formatCents(item.cents)}\`);
+  }
+  lines.push(\`Total: \${formatCents(total)}\`);
+  return lines.join("\\n");
+}
+`
+    }
+  },
+  {
+    id: "integrate-07-app-error-hierarchy",
+    bucket: "integrate",
+    prompt: "In src/handlers/userHandler.js, implement and export function findUserOrThrow(users, id). Find the user matching id. If found, return it. If not found, throw an AppError from ../errors/AppError.js with message 'User not found', statusCode 404, and code 'USER_NOT_FOUND'. Reuse the existing AppError class; do not create new Error subclasses or wrapper factories.",
+    fixture: {
+      "package.json": '{\n  "name": "app",\n  "type": "module"\n}\n',
+      "src/errors/AppError.js": `export class AppError extends Error {
+  constructor(message, statusCode, code) {
+    super(message);
+    this.name = "AppError";
+    this.statusCode = statusCode;
+    this.code = code;
+  }
+}
+export function isAppError(err) {
+  return err instanceof AppError;
+}
+`,
+      "src/handlers/userHandler.js": `// Implement findUserOrThrow here\n`
+    },
+    check: `const { AppError, isAppError } = await import(pathToFileURL(resolve(workdir, "src/errors/AppError.js")).href);
+const userMod = await import(pathToFileURL(resolve(workdir, "src/handlers/userHandler.js")).href);
+assert.equal(typeof userMod.findUserOrThrow, "function");
+
+const users = [{ id: "u1", name: "Alice" }, { id: "u2", name: "Bob" }];
+assert.deepEqual(userMod.findUserOrThrow(users, "u1"), { id: "u1", name: "Alice" });
+
+let threw = false;
+try {
+  userMod.findUserOrThrow(users, "u999");
+} catch (err) {
+  threw = true;
+  assert.ok(isAppError(err));
+  assert.equal(err.statusCode, 404);
+  assert.equal(err.code, "USER_NOT_FOUND");
+  assert.equal(err.message, "User not found");
+}
+assert.ok(threw, "Must throw AppError when user not found");
+
+const fs = await import("node:fs");
+const code = fs.readFileSync(resolve(workdir, "src/handlers/userHandler.js"), "utf8");
+assert.match(code, /AppError/, "Must reuse AppError from AppError.js");
+assert.doesNotMatch(code, /extends\\s+Error/, "Must not declare new Error subclasses");
+assert.doesNotMatch(code, /\\bclass\\s+[A-Z]/, "Must not introduce abstraction classes");
+console.log("PASS");
+`,
+    reference: {
+      "package.json": '{\n  "name": "app",\n  "type": "module"\n}\n',
+      "src/errors/AppError.js": `export class AppError extends Error {
+  constructor(message, statusCode, code) {
+    super(message);
+    this.name = "AppError";
+    this.statusCode = statusCode;
+    this.code = code;
+  }
+}
+export function isAppError(err) {
+  return err instanceof AppError;
+}
+`,
+      "src/handlers/userHandler.js": `import { AppError } from "../errors/AppError.js";
+
+export function findUserOrThrow(users, id) {
+  const user = users.find((u) => u.id === id);
+  if (!user) {
+    throw new AppError("User not found", 404, "USER_NOT_FOUND");
+  }
+  return user;
+}
+`
+    }
+  },
+  {
+    id: "integrate-08-date-utils-reuse",
+    bucket: "integrate",
+    prompt: "In src/membership/plan.js, implement and export function checkPlanStatus(expiresAt, now = new Date()). Use isPastDate and daysBetween from ../time/dateUtils.js. If isPastDate(expiresAt, now) is true, return 'expired'. Otherwise return 'active: ' + daysBetween(now, expiresAt) + ' days'. Reuse the existing helpers; do not perform manual millisecond arithmetic or declare date helper classes.",
+    fixture: {
+      "package.json": '{\n  "name": "app",\n  "type": "module"\n}\n',
+      "src/time/dateUtils.js": `export function daysBetween(d1, d2) {
+  const ms = Math.abs(new Date(d2).getTime() - new Date(d1).getTime());
+  return Math.floor(ms / (1000 * 60 * 60 * 24));
+}
+export function isPastDate(d, now = new Date()) {
+  return new Date(d).getTime() < new Date(now).getTime();
+}
+`,
+      "src/membership/plan.js": `// Implement checkPlanStatus here\n`
+    },
+    check: `const planMod = await import(pathToFileURL(resolve(workdir, "src/membership/plan.js")).href);
+assert.equal(typeof planMod.checkPlanStatus, "function");
+
+const baseTime = new Date("2026-10-30T12:00:00Z");
+const pastTime = new Date("2026-10-25T12:00:00Z");
+const futureTime = new Date("2026-11-04T12:00:00Z");
+
+assert.equal(planMod.checkPlanStatus(pastTime, baseTime), "expired");
+assert.equal(planMod.checkPlanStatus(futureTime, baseTime), "active: 5 days");
+
+const fs = await import("node:fs");
+const code = fs.readFileSync(resolve(workdir, "src/membership/plan.js"), "utf8");
+assert.match(code, /isPastDate/, "Must reuse isPastDate from dateUtils.js");
+assert.match(code, /daysBetween/, "Must reuse daysBetween from dateUtils.js");
+assert.doesNotMatch(code, /86400|1000\\s*\\*\\s*60/, "Must not duplicate millisecond conversion arithmetic");
+assert.doesNotMatch(code, /\\bclass\\s+[A-Z]/, "Must not introduce abstraction classes");
+console.log("PASS");
+`,
+    reference: {
+      "package.json": '{\n  "name": "app",\n  "type": "module"\n}\n',
+      "src/time/dateUtils.js": `export function daysBetween(d1, d2) {
+  const ms = Math.abs(new Date(d2).getTime() - new Date(d1).getTime());
+  return Math.floor(ms / (1000 * 60 * 60 * 24));
+}
+export function isPastDate(d, now = new Date()) {
+  return new Date(d).getTime() < new Date(now).getTime();
+}
+`,
+      "src/membership/plan.js": `import { isPastDate, daysBetween } from "../time/dateUtils.js";
+
+export function checkPlanStatus(expiresAt, now = new Date()) {
+  if (isPastDate(expiresAt, now)) {
+    return "expired";
+  }
+  return \`active: \${daysBetween(now, expiresAt)} days\`;
+}
+`
+    }
   }
 ];
 
@@ -1627,7 +2104,9 @@ export function generateAll(baseDir = ".") {
 
     // 2. fixture files
     for (const [fname, content] of Object.entries(t.fixture)) {
-      writeFileSync(join(fixtureDir, fname), content);
+      const targetPath = join(fixtureDir, fname);
+      mkdirSync(dirname(targetPath), { recursive: true });
+      writeFileSync(targetPath, content);
     }
 
     // 3. check.mjs
@@ -1686,7 +2165,9 @@ export function generateAll(baseDir = ".") {
       writeFileSync(join(refDir, "answer.txt"), t.qaCheck.expected + "\n");
     } else if (t.reference) {
       for (const [fname, content] of Object.entries(t.reference)) {
-        writeFileSync(join(refDir, fname), content);
+        const targetPath = join(refDir, fname);
+        mkdirSync(dirname(targetPath), { recursive: true });
+        writeFileSync(targetPath, content);
       }
     }
   }

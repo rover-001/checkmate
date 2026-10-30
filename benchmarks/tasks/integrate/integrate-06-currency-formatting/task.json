@@ -1,0 +1,5 @@
+{
+  "id": "integrate-06-currency-formatting",
+  "bucket": "integrate",
+  "prompt": "In src/views/receipt.js, implement and export function generateReceipt(items). items is an array of { name: string, cents: number }. Return a multi-line string where each item is formatted as '${item.name}: ${formattedPrice}' and the final line is 'Total: ${formattedTotal}'. Use formatCents from ../utils/money.js to format all prices. Do not re-implement currency formatting or toFixed division."
+}

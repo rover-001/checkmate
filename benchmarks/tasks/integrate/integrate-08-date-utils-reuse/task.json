@@ -1,0 +1,5 @@
+{
+  "id": "integrate-08-date-utils-reuse",
+  "bucket": "integrate",
+  "prompt": "In src/membership/plan.js, implement and export function checkPlanStatus(expiresAt, now = new Date()). Use isPastDate and daysBetween from ../time/dateUtils.js. If isPastDate(expiresAt, now) is true, return 'expired'. Otherwise return 'active: ' + daysBetween(now, expiresAt) + ' days'. Reuse the existing helpers; do not perform manual millisecond arithmetic or declare date helper classes."
+}

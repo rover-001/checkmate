@@ -14,7 +14,7 @@ import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 
-const BUCKETS = ["feature", "bugfix", "refactor", "qa"];
+const BUCKETS = ["feature", "bugfix", "refactor", "qa", "integrate"];
 const ROOT_DIR = process.cwd();
 
 function runCheck(checkScriptPath, workdir, extraArg = null) {

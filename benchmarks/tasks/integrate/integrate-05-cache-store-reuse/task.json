@@ -1,0 +1,5 @@
+{
+  "id": "integrate-05-cache-store-reuse",
+  "bucket": "integrate",
+  "prompt": "In src/services/catalog.js, implement and export async function getCatalogItem(id, loaderFn). Cache the result for 30000ms using the existing getOrSet(key, ttlMs, fetcher) helper from ../cache/store.js with key 'item:' + id. Reuse the existing getOrSet helper; do not create duplicate cache maps or caching layers."
+}

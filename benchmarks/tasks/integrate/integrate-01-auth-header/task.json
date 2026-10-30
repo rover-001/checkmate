@@ -1,0 +1,5 @@
+{
+  "id": "integrate-01-auth-header",
+  "bucket": "integrate",
+  "prompt": "In src/api/orders.js, implement and export async function fetchOrder(orderId, token). It should make a request using the existing request(url, options) and buildAuthHeader(token) from ../http/client.js, passing the Authorization header. Return the request result. Reuse the existing helper; do not duplicate header formatting or add wrapper classes."
+}

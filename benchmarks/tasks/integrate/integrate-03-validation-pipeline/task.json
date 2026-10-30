@@ -1,0 +1,5 @@
+{
+  "id": "integrate-03-validation-pipeline",
+  "bucket": "integrate",
+  "prompt": "In src/routes/signup.js, implement and export function validateSignup(data). Validate data using existing functions from ../validators/common.js: isEmail for data.email, hasMinLength for data.password with min 8, and isPositiveInt for data.age. Return an array of error strings: 'invalid_email', 'short_password', 'invalid_age'. Return empty array if all valid. Do not write custom regexes or validation classes."
+}

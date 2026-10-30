@@ -40,6 +40,12 @@ export function generateMarkdownReport(summary) {
     `*Benchmark summary generated at ${summary.generatedAt} using model \`${summary.model}\` (${summary.runsPerTask} run(s)/task).*`
   );
   lines.push("");
+  lines.push("### View 1: Overall (Per-Arm Passed Runs)");
+  lines.push("");
+  lines.push(
+    "*Standard view: medians (tokens, steps, wall) are computed over each arm's own passed runs.*"
+  );
+  lines.push("");
   lines.push(
     "| Scope | Arm | Runs | Passed | Pass Rate | Uncached In | Cache Read | Output | Total Tokens | Steps | Wall |"
   );
@@ -54,14 +60,7 @@ export function generateMarkdownReport(summary) {
     }
   }
 
-  // 2. Shared Intersection (if present in main table)
-  if (summary.intersection && summary.intersection.arms) {
-    for (const [armName, arm] of Object.entries(summary.intersection.arms)) {
-      lines.push(formatRow("**Shared Intersection**", armName, arm, true));
-    }
-  }
-
-  // 3. Buckets
+  // 2. Buckets
   if (summary.buckets) {
     for (const [bucketName, bucketArms] of Object.entries(summary.buckets)) {
       const bucketLabel =
@@ -72,7 +71,7 @@ export function generateMarkdownReport(summary) {
     }
   }
 
-  // 4. Dedicated Shared Task Intersection Section
+  // 3. View 2: Shared-Set View (Strict Paired Intersection)
   if (
     summary.intersection &&
     summary.intersection.arms &&
@@ -83,10 +82,10 @@ export function generateMarkdownReport(summary) {
       summary.intersection.sharedTaskCount ??
       0;
     lines.push("");
-    lines.push("### Shared Task Intersection (All Arms Passed)");
+    lines.push("### View 2: Shared-Set (Identical Tasks Where All Arms Passed)");
     lines.push("");
     lines.push(
-      `*Paired comparison across ${taskCount} task(s) where all evaluated arms passed 100% of runs (eliminating survivorship bias).*`
+      `*Paired intersection across ${taskCount} identical task(s) where ALL evaluated arms passed 100% of runs (eliminating survivorship bias).*`
     );
     lines.push("");
     lines.push(
@@ -99,6 +98,42 @@ export function generateMarkdownReport(summary) {
       lines.push(
         `| \`${armName}\` | ${taskCount} | ${formatPassRate(arm.passRate)} | ${formatTokens(arm.medianInputTokens, arm.iqrInputTokens)} | ${formatTokens(arm.medianCacheReadTokens, arm.iqrCacheReadTokens)} | ${formatTokens(arm.medianOutputTokens, arm.iqrOutputTokens)} | ${arm.medianTotalTokens ?? "-"} | ${arm.medianSteps ?? "-"} | ${formatWall(arm.medianWallMs)} |`
       );
+    }
+  }
+
+  // 4. Failure Breakdown
+  if (summary.failures && typeof summary.failures === "object" && Object.keys(summary.failures).length > 0) {
+    lines.push("");
+    lines.push("### Failure Breakdown");
+    lines.push("");
+    lines.push(
+      "*Every failed run in `checkmate` and `ultra` arms is classified from actual run logs and test outputs into 5 root-cause categories.*"
+    );
+
+    for (const [armName, failData] of Object.entries(summary.failures)) {
+      lines.push("");
+      lines.push(
+        `#### \`${armName}\` Failure Analysis (${failData.failed} failed of ${failData.runs} runs)`
+      );
+      lines.push("");
+      lines.push("| Failure Category | Count | % of Failures |");
+      lines.push("| :--- | :---: | :---: |");
+
+      const cats = failData.categories || {};
+      const totalFailed = failData.failed || 0;
+      for (const [catName, count] of Object.entries(cats)) {
+        const pct =
+          totalFailed > 0 ? ((count / totalFailed) * 100).toFixed(1) + "%" : "0.0%";
+        lines.push(`| ${catName} | ${count} | ${pct} |`);
+      }
+
+      lines.push("");
+      if (failData.taskIds && failData.taskIds.length > 0) {
+        const taskListStr = failData.taskIds.map((t) => `\`${t}\``).join(", ");
+        lines.push(`**Failing Task IDs:** ${taskListStr}`);
+      } else {
+        lines.push("**Failing Task IDs:** *None (100% pass)*");
+      }
     }
   }
 

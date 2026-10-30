@@ -17,19 +17,24 @@ import {
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync, spawn } from "node:child_process";
-import { computeSummary } from "./stats.mjs";
+import { computeSummary, classifyFailure } from "./stats.mjs";
 import { generateMarkdownReport } from "../scripts/report.mjs";
 
 const ROOT_DIR = resolve(process.cwd());
-const BUCKETS = ["feature", "bugfix", "refactor", "qa"];
+const BUCKETS = ["feature", "bugfix", "refactor", "qa", "integrate"];
 
 // Parse CLI flags
 function parseArgs(args) {
+  const envModel =
+    process.env.CHECKMATE_BENCHMARK_MODEL ||
+    process.env.MODEL ||
+    process.env.ANTHROPIC_MODEL;
+
   const flags = {
-    arms: ["baseline", "checkmate"],
+    arms: ["baseline", "checkmate", "ultra"],
     runs: 3,
     tasks: null,
-    model: "claude-opus-5-5",
+    model: envModel || "claude-sonnet-5-5",
     concurrency: 1,
     out: null,
     realistic: false,
@@ -329,6 +334,19 @@ async function executeRun({ task, arm, runNumber, payload, model, flags }) {
     });
 
     passed = checkRes.status === 0;
+    const checkOutput =
+      (checkRes.stderr ? checkRes.stderr + "\n" : "") + (checkRes.stdout || "");
+    const failureReason = passed
+      ? null
+      : classifyFailure({
+          passed: false,
+          error: errorMsg,
+          checkOutput,
+          agentOutput: agentResultText,
+          wallMs,
+          locPersisted,
+          bucket: task.bucket,
+        });
 
     return {
       taskId: task.id,
@@ -346,7 +364,12 @@ async function executeRun({ task, arm, runNumber, payload, model, flags }) {
       locPersisted,
       locAdded,
       locDeleted,
-      error: errorMsg,
+      checkOutput: passed ? null : checkOutput.trim(),
+      agentOutput: agentResultText ? agentResultText.slice(0, 500) : null,
+      failureReason,
+      error:
+        errorMsg ||
+        (passed ? null : checkOutput.trim() || "Verification failed"),
       timestamp: new Date().toISOString(),
     };
   } catch (err) {
@@ -366,6 +389,13 @@ async function executeRun({ task, arm, runNumber, payload, model, flags }) {
       locPersisted: 0,
       locAdded: 0,
       locDeleted: 0,
+      checkOutput: err.message,
+      agentOutput: null,
+      failureReason: classifyFailure({
+        passed: false,
+        error: err.message,
+        wallMs: Date.now() - startTime,
+      }),
       error: err.message,
       timestamp: new Date().toISOString(),
     };
@@ -482,10 +512,19 @@ async function main() {
   const sharedSummaryPath = join(ROOT_DIR, "benchmarks", "results", "summary.json");
   writeFileSync(sharedSummaryPath, summaryJsonStr, "utf8");
 
+  // Keep per-model results in separate files
+  const modelSlug = flags.model.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const perModelSummaryPath = join(ROOT_DIR, "benchmarks", "results", `summary-${modelSlug}.json`);
+  const perModelRawPath = join(ROOT_DIR, "benchmarks", "results", `raw-${modelSlug}.jsonl`);
+  writeFileSync(perModelSummaryPath, summaryJsonStr, "utf8");
+  copyFileSync(rawJsonlPath, perModelRawPath);
+
   console.log(`\nResults written to:`);
   console.log(`  - ${rawJsonlPath}`);
   console.log(`  - ${summaryJsonPath}`);
-  console.log(`  - ${sharedSummaryPath}\n`);
+  console.log(`  - ${sharedSummaryPath}`);
+  console.log(`  - ${perModelSummaryPath}`);
+  console.log(`  - ${perModelRawPath}\n`);
 
   console.log("=== Benchmark Summary Table ===");
   console.log(generateMarkdownReport(summary));

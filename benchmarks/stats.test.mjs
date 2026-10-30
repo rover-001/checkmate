@@ -8,6 +8,8 @@ import {
   computeSummary,
   computeIntersectionStats,
   computePairedIntersection,
+  classifyFailure,
+  computeFailureBreakdown,
 } from "./stats.mjs";
 
 describe("computeMedian", () => {
@@ -232,5 +234,91 @@ describe("computeSummary", () => {
     assert.equal(summary.buckets.bugfix.baseline.runs, 0);
     assert.equal(summary.buckets.bugfix.baseline.passed, 0);
     assert.equal(summary.buckets.qa.baseline.runs, 1);
+
+    // Verify failure breakdown object on summary
+    assert.ok(summary.failures);
+    assert.ok(summary.failures.checkmate);
+    assert.equal(summary.failures.checkmate.failed, 0);
+  });
+});
+
+describe("classifyFailure", () => {
+  test("returns null for passed runs", () => {
+    assert.equal(classifyFailure({ passed: true }), null);
+  });
+
+  test("classifies timeout", () => {
+    assert.equal(classifyFailure({ passed: false, timedOut: true }), "timeout");
+    assert.equal(classifyFailure({ passed: false, wallMs: 180000 }), "timeout");
+    assert.equal(classifyFailure({ passed: false, error: "ETIMEDOUT: process timed out" }), "timeout");
+  });
+
+  test("classifies skipped verification", () => {
+    assert.equal(
+      classifyFailure({ passed: false, agentOutput: "done, unverified: tests could not run" }),
+      "skipped verification"
+    );
+    assert.equal(
+      classifyFailure({ passed: false, error: "Verification skipped before closing" }),
+      "skipped verification"
+    );
+  });
+
+  test("classifies partial change", () => {
+    assert.equal(
+      classifyFailure({ passed: false, error: "Error: Not implemented" }),
+      "partial change"
+    );
+    assert.equal(
+      classifyFailure({ passed: false, error: "TypeError: fetchOrder is not a function" }),
+      "partial change"
+    );
+    assert.equal(
+      classifyFailure({ passed: false, locPersisted: 0, bucket: "feature", error: "No changes made" }),
+      "partial change"
+    );
+  });
+
+  test("classifies wrong output", () => {
+    assert.equal(
+      classifyFailure({ passed: false, checkOutput: "AssertionError: expected 'foo' to equal 'bar'" }),
+      "wrong output"
+    );
+    assert.equal(
+      classifyFailure({ passed: false, error: "Verification failed on edge case" }),
+      "wrong output"
+    );
+  });
+
+  test("classifies other for unrecognized failures", () => {
+    assert.equal(
+      classifyFailure({ passed: false, error: "Segmentation fault (core dumped)" }),
+      "other"
+    );
+  });
+});
+
+describe("computeFailureBreakdown", () => {
+  test("computes failure counts and lists failing task IDs per arm", () => {
+    const runs = [
+      { taskId: "task-1", arm: "checkmate", passed: true },
+      { taskId: "task-2", arm: "checkmate", passed: false, error: "AssertionError: expected 1 to equal 2" },
+      { taskId: "task-3", arm: "ultra", passed: false, error: "Verification skipped" },
+      { taskId: "task-4", arm: "ultra", passed: false, error: "Not implemented" },
+      { taskId: "task-5", arm: "ultra", passed: true },
+    ];
+
+    const breakdown = computeFailureBreakdown(runs, ["checkmate", "ultra"]);
+
+    assert.equal(breakdown.checkmate.runs, 2);
+    assert.equal(breakdown.checkmate.failed, 1);
+    assert.equal(breakdown.checkmate.categories["wrong output"], 1);
+    assert.deepEqual(breakdown.checkmate.taskIds, ["task-2"]);
+
+    assert.equal(breakdown.ultra.runs, 3);
+    assert.equal(breakdown.ultra.failed, 2);
+    assert.equal(breakdown.ultra.categories["skipped verification"], 1);
+    assert.equal(breakdown.ultra.categories["partial change"], 1);
+    assert.deepEqual(breakdown.ultra.taskIds, ["task-3", "task-4"]);
   });
 });

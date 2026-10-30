@@ -1,6 +1,6 @@
 {
   "name": "checkmate",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Goal-driven mode for AI coding agents. Reach the user's win condition in the fewest moves.",
   "type": "module",
   "license": "MIT",
