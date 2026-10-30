@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-10-30
+
+### Added
+- **Architectural & Holistic Engineering Manifesto**: Directly addressed community feedback regarding agent "corner cutting" and "rooms in a field" design anti-patterns. Clarified how Checkmate enforces deep codebase integration, root-cause resolution, and whole-system harmony over superficial fixes.
+- **Doc-First & Spec Synergy Documentation**: Detailed the execution blueprint model where Checkmate acts as the high-velocity execution engine for doc-first specifications, RFCs, and PRDs without permission-seeking stalls or option-menu paralysis.
+- **Mode Selection Framework**: Comprehensive breakdown of `full` vs `lite` vs `ultra`, including the behavioral and pass-rate tradeoffs on multi-step tasks (answering why Full achieves 98.3% pass rate vs Ultra's 95.8%).
+- **Rigorous Benchmark Methodology**: Fully documented the Paired Shared Task Intersection (21 tasks passed by 100% of arms, eliminating survivorship bias), demonstrating a 51% output token reduction and 50% step cut on identical complex tasks.
+- **Real-World Transcript Telemetry in `checkmate-gain`**: Integrated live session analysis (`~/.claude/projects/*/*.jsonl`) measuring real-world turns, output tokens/turn, tool calls/turn, and comparative deltas between Checkmate and baseline sessions.
+- **Safety Invariant Enforcement**: Mandated explicit user confirmations in Rule 6 and Overrides for all outward-facing or hard-to-undo actions (git push, deploy, publish, send, delete, public-facing copy).
+- **101 Acceptance & Behavior Tests**: Expanded test suite to 101 tests verifying core rules, multi-agent builds, gain telemetry, hook precedence, and edge cases.
+
+### Changed
+- **Synchronized Canonical Rules**: Updated documentation to match canonical `rules/checkmate.md` with explicit outward-facing exemptions, behavioral test requirements, and `done, unverified: <what>` states.
+- **Version Synchronized**: Bumper version to 2.0.0 across `package.json`, `.claude-plugin/plugin.json`, and `.claude-plugin/marketplace.json`.
+
 ## [1.2.2] - 2026-10-28
 
 ### Fixed

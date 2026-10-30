@@ -11,8 +11,9 @@
 
   <p>
     <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
+    <a href="package.json"><img src="https://img.shields.io/badge/version-2.0.0-blue.svg" alt="Version 2.0.0" /></a>
     <a href="package.json"><img src="https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg" alt="Node.js >= 20.0.0" /></a>
-    <a href="tests/"><img src="https://img.shields.io/badge/tests-85%20passed-success.svg" alt="Tests" /></a>
+    <a href="tests/"><img src="https://img.shields.io/badge/tests-101%20passed-success.svg" alt="Tests" /></a>
     <a href="package.json"><img src="https://img.shields.io/badge/dependencies-0-success.svg" alt="Zero Dependencies" /></a>
   </p>
 </div>
@@ -27,6 +28,35 @@
 2. **Take the shortest path** that completely satisfies the goal.
 3. **Spend the fewest tokens**—no preambles, recaps, or unrequested closing offers.
 4. **Verify the solution** against actual requirements and tests before declaring done.
+
+---
+
+## Philosophy: Holistic Architecture vs. "Corner Cutting"
+
+In discussions around AI agent efficiency, a natural concern arises: *Does moving fast mean cutting corners? A model might build a room in a field (door, window, closet), then another, and eventually you have a disconnected collection of rooms rather than a cohesive house.*
+
+Checkmate is designed with the opposite philosophy: **efficiency of execution requires holistic understanding of the system.**
+
+Unguided AI agents routinely exhibit architectural anti-patterns:
+- **Symptom-patching & layer bloat:** When an agent struggles with an issue, it instinctively invents new wrapper classes, retry handlers, extra config files, or duplicate layers instead of fixing the root cause within the existing architecture.
+- **Conversational stall tactics:** Asking for permission to perform obvious next steps, presenting speculative menus of approaches that were already decided, or writing verbose conversational preambles.
+- **Superficial verification:** Writing shallow tests that merely assert log strings, prompt text, or mocked returns rather than verifying true runtime behavior and state transitions.
+
+Checkmate combats these pitfalls directly:
+1. **Root-Cause Integration (Rule 8: Earn Complexity):** Agents are forbidden from introducing new abstractions, wrapper classes, or configuration layers unless a concrete requirement or failure explicitly forces it. The agent must integrate cleanly into the existing codebase as one cohesive machine.
+2. **Silent Comprehension, Not Skipped Comprehension (Rule 1: Goal):** Identifying the win condition silently does not mean skipping context. The agent inspects call sites, invariants, and existing patterns upfront—what gets eliminated is the conversational theater, rhetorical questions, and restating of user prompts.
+3. **Strict Behavioral Verification (Rule 7: Verify):** Checkmate explicitly mandates verifying actual runtime behavior, checking command exit codes, and disallowing skipped tests as passes.
+4. **Safety & Invariant Protections (Rule 6 & Overrides):** Autonomous execution does not mean reckless execution. Checkmate strictly halts and demands explicit confirmation before any action that leaves the machine or is hard to undo: push, deploy, publish, send, delete, or public-facing text modifications.
+
+---
+
+## Checkmate + Doc-First Specifications
+
+A frequent question from engineering teams: *Is Checkmate meant as an alternative to doc-first / spec-driven development?*
+
+**They are complementary partners:**
+- **The Blueprint (Doc-First):** Your PRD, RFC, or build spec defines the architecture of the house—the invariants, endpoints, data models, and edge cases.
+- **The Execution Engine (Checkmate):** Standard AI agents given a comprehensive spec frequently stall into conversational paralysis: asking for permission to create files already specified, offering menus of alternative implementations already settled in the spec, or producing noisy progress recaps. Checkmate takes the approved blueprint and drives the agent straight to the win condition on the shortest, quietest path.
 
 ---
 
@@ -141,14 +171,19 @@ Trigger checkmate in Codex prompts with `@checkmate` or natural language (*"chec
 
 When installed in Claude Code, checkmate activates **automatically** via the `SessionStart` hook.
 
-### Modes
+### Modes & Selection Guide
 
-| Mode | Intensity & Behavior |
-| :--- | :--- |
-| **`lite`** | Rules 1–9, plus exactly one line naming a shorter path if you observed one. |
-| **`full`** *(default)* | Rules 1–9 as written. Direct, goal-driven, and concise. |
-| **`ultra`** | Minimum tokens. Zero commentary except the closing line and unavoidable assumptions. Strictest scope cuts. |
-| **`off`** | Disables checkmate rules completely; restores normal agent behavior. |
+| Mode | Pass Rate (40 Tasks) | Median Output | Focus & Ideal Use Case |
+| :--- | :---: | :---: | :--- |
+| **`full`** *(default)* | **98.3%** | 274 tokens | **Recommended for production software engineering.** Full Rules 1–9. Highest reliability on complex multi-file features, architectural refactors, and bugfixes while eliminating 51% of output tokens. |
+| **`lite`** | **98.3%** | ~310 tokens | **Architectural observation mode.** Full Rules 1–9, plus exactly one line observing a cleaner/shorter architectural path if noticed during execution. |
+| **`ultra`** | **95.8%** | 203 tokens | **Maximum token compression.** Zero commentary except the final closing status line and unavoidable assumptions. Best for focused single-file edits, scripts, and direct technical Q&A. |
+| **`off`** | 86.7% | 562 tokens | **Deactivated.** Disables checkmate rules completely; restores default conversational agent behavior. |
+
+#### Why did `ultra` miss a few tasks that `full` passed?
+In the 120-run benchmark suite, `full` mode achieved **98.3% pass rate** compared to `ultra`'s **95.8%**. On deeply nested multi-step tasks (e.g. multi-stage refactoring or subtle algorithmic edge cases), Ultra aggressively eliminates intermediate reasoning notes and exploratory commentary. In rare edge cases requiring multi-phase self-correction, Ultra's extreme brevity pressure can cause the model to finalize before verifying secondary edge conditions.
+
+> **Guideline:** Use **`full`** as your daily driver for application development and codebase features. Use **`ultra`** for fast single-turn edits, shell commands, and concise question-answering.
 
 ### Commands
 
@@ -213,9 +248,10 @@ Displays a quick reference card summarizing modes, commands, configuration paths
 - **Scope:** One-shot informational display; does not alter state.
 
 ### 3. `checkmate-gain`
-Displays the efficiency scoreboard comparing checkmate against the unassisted baseline.
-- **Trigger:** `/checkmate-gain` or *"checkmate gain"*
-- **Output:** Reports goal-pass rate, median output tokens, median total tokens, and step reductions directly from benchmark data. Read-only.
+Displays the efficiency scoreboard and analyzes live session telemetry.
+- **Trigger:** `/checkmate-gain` or `node skills/checkmate-gain/gain.mjs`
+- **Benchmark Scoreboard:** Reports pass rates, output tokens, total tokens, and step reductions directly from verified benchmark runs.
+- **Live Session Telemetry (`--sessions`):** Directly parses local Claude Code transcripts (`~/.claude/projects/*/*.jsonl`). Compares real-world Checkmate sessions against Baseline sessions, reporting turns, output tokens per turn, tool calls per turn, command repetition frequencies, and token concentration.
 
 ---
 
@@ -225,7 +261,7 @@ A `SKILL.md` file alone does not reliably activate in modern AI agents. Independ
 
 checkmate guarantees activation through a native **`SessionStart` hook** (`hooks/checkmate-instructions.js`):
 1. Runs instantaneously (<5ms script logic) on session startup and resume.
-2. Resolves the active mode across environment variables, state files, and user config.
+2. Resolves the active mode across environment variables, per-project state files, and user config.
 3. If mode is `off`, outputs nothing and exits cleanly.
 4. Otherwise, injects the core rules plus the selected mode delta directly into the agent's context.
 5. All operations are local, zero-dependency, and safe against crashes (fails closed silently).
@@ -242,19 +278,19 @@ checkmate guarantees activation through a native **`SessionStart` hook** (`hooks
 
 Goal-driven mode. Reach the user's win condition in the fewest moves.
 
-1. GOAL. Before acting, identify the win condition: what must be true when this is done. Do this silently. State it only if ambiguous.
+1. GOAL. Identify the win condition silently; state only if ambiguous.
 2. SHORTEST PATH. Choose the least complex solution that fully meets the goal. No extra features, abstractions, config, or options nobody asked for.
 3. TOKENS. Answer first. No preamble, no restating the question, no recap, no closing offers. Stop when the goal is met.
 4. DECIDE. Pick one approach. If a tradeoff matters, state it in one line. Never present a menu unless asked.
 5. ASK RARELY. Ask only when blocked and no safe assumption exists. One question max. Otherwise state the assumption in one line and proceed.
-6. FINISH. Partial work is not done. Continue until the goal is met or a real blocker exists. Do not stop to ask permission for obvious next steps.
-7. VERIFY. Before declaring done, check the result against the goal (run it, test it, re-read the requirement), not against how it looks. When writing tests, verify actual behavioral logic and state transitions—never write superficial assertions that merely check prompt text, log strings, or mock return values.
-8. EARN COMPLEXITY. Add complexity only when a concrete failure or stated requirement forces it. Say which.
-9. CLOSE. Last line: done, not done: <why>, or blocked: <what's needed>.
+6. FINISH. Partial work is not done. Continue until the goal is met or a real blocker exists. Do not stop to ask permission for obvious next steps (except outward-facing or irreversible actions).
+7. VERIFY. Before declaring done, check the result against the goal (run it, test it, re-read the requirement), not how it looks. Show command and exit status; skipped tests are not passes; check exit status, not output tails. Verify actual behavioral logic and state transitions—never write superficial assertions that merely check prompt text, log strings, or mock return values.
+8. EARN COMPLEXITY. Add complexity only when a concrete failure or requirement forces it. Say which.
+9. CLOSE. Last line: `done`, `done, unverified: <what>`, `not done: <why>`, or `blocked: <what's needed>`.
 
 Off switch: if the user says "stop checkmate" or "normal mode", stop applying these rules.
 
-Overrides: safety, correctness, and explicit user requests (e.g. "explain in detail") always win over brevity.
+Overrides: safety, correctness, and explicit user requests (e.g. "explain in detail") always win over brevity. Always confirm before an action that leaves the machine or is hard to undo: push, deploy, publish, send, delete, or changing public-facing text.
 ```
 
 </details>
@@ -272,7 +308,8 @@ checkmate is rigorously evaluated across a 40-task benchmark suite spanning 4 di
 ### Integrity & Measurement Principles
 - **Pass rate first, tokens second**: An agent that fails quickly is not efficient; it is broken. Pass rate is the primary metric.
 - **Conditioned on success**: Token, step, and wall-clock medians and IQRs are computed **strictly among passed runs**. Failures cannot "win" on brevity.
-- **Honest reporting**: No unmeasured claims or fabricated percentages.
+- **Eliminating Survivorship Bias via Paired Intersection**: When different modes have different success rates, 'passed runs only' medians can skew comparisons because a lower-performing mode might only pass the easiest tasks. Checkmate solves this with the **Shared Task Intersection** table, computing metrics strictly across tasks where *all* evaluated arms passed 100% of runs.
+- **Honest reporting**: No unmeasured claims or fabricated percentages. The benchmark harness is open source in `benchmarks/` and reproducible with `npm run benchmark`.
 
 <!-- results:start -->
 
